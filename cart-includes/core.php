@@ -63,6 +63,9 @@ class Core
         
         //  load plugins
         
+        //  load taxanomy types
+        TaxonomyType::loadAll();
+        
         //  activate the current theme
         self::$activeTheme = Theme::getActiveTheme();
     }

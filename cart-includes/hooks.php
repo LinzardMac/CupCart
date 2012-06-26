@@ -24,7 +24,16 @@ class Hooks
     */
     public static function addAction($actionName, $callback, $priority = 5)
     {
+        if (!array_key_exists($actionName, self::$actionStack))
+            self::$actionStack[$actionName] = array();
         
+        $actionStack = self::$actionStack[$actionName];
+        if (!array_key_exists($priority, $actionStack))
+            $actionStack[$priority] = array();
+        
+        $actionStack[$priority][] = $callback;
+        
+        self::$actionStack[$actionName] = self::sortStack($actionStack);
     }
     
     /**
@@ -43,7 +52,18 @@ class Hooks
     */
     public static function doAction($actionName)
     {
+        if (!array_key_exists($actionName, self::$actionStack))
+            return;
+        $args = func_get_args();
+        array_shift($args);
         
+        foreach(self::$actionStack[$actionName] as $prio => $callbacks)
+        {
+            foreach($callbacks as $callback)
+            {
+                call_user_func_array($callback, array($value));
+            }
+        }
     }
     
     /**

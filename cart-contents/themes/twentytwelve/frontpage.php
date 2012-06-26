@@ -1,25 +1,25 @@
 <html>
     <head>
-        <title>Home :: <?=$store->name?></title>
+        <title>Home :: <?=TPL::getStoreName()?></title>
     </head>
     <body>
-        <h1><?=$store->name?></h1>
+        <h1><?=TPL::getStoreName()?></h1>
         <h2>Home</h2>
         <p>Welcome to the store!</p>
         
-        <? if (isset($specials) && $specials->hasEntities()):
+        <? if (TPL::hasProducts('specials')):
             echo '<h3>Specials</h3>';
-            while ($specials->theEntity() != null): ?>
+            while (TPL::hasProducts('specials')): TPL::theProduct(); ?>
             
-                <h4><a href="<?=$specials->theUrl()?>"><?=$specials->theTitle()?></a></h4>
+                <h4><a href="<?=TPL::getTheUrl()?>"><?=TPL::getTheTitle()?></a></h4>
             
         <?  endwhile; endif; ?>
         
-        <? if (isset($promoted) && $promoted->hasEntities()):
-            echo '<h3>Promotions</h3>';
-            while ($promoted->hasEntities()): ?>
+        <? if (TPL::hasProducts('promoted')):
+            echo '<h3>Promoted</h3>';
+            while (TPL::hasProducts('promoted')): TPL::theProduct(); ?>
             
-                <h4><a href="<?=$promoted->theUrl()?>"><?=$promoted->theTitle()?></a></h4>
+                <h4><a href="<?=TPL::getTheUrl()?>"><?=TPL::getTheTitle()?></a></h4>
             
         <?  endwhile; endif; ?>
         
