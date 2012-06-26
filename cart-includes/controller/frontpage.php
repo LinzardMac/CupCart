@@ -13,9 +13,9 @@ class Controller_FrontPage extends Controller
         $specials = new Loop(Entity::getByMeta('isSpecial', true, 5, 0, array('PhysicalProduct')));
         $promoted = new Loop(Entity::getByMeta('isPromoted', true, 5, 0, array('PhysicalProduct')));
         
-        View::get()->set(array(
-            'specials'  => $specials,
-            'promoted'  => $promoted
-        ))->render();
+        TPL::addProductLoop($specials, 'specials');
+        TPL::addProductLoop($promoted, 'promoted');
+        
+        View::get()->render();
     }
 }
