@@ -18,7 +18,7 @@ class File
         {
             if (is_dir($dir.$file) && $file != "." && $file != "..")
             {
-                $ret[] = $dir.$file;
+                $ret[] = $dir.$file.DIRECTORY_SEPARATOR;
             }
         }
         closedir($dh);
