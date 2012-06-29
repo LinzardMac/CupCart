@@ -5,3 +5,5 @@
     </head>
     <body>
         <h1><?=TPL::getStoreName()?></h1>
+        
+        <? WidgetSpace::theSpace('Header'); ?>
