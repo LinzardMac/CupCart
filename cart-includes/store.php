@@ -21,7 +21,7 @@ class Store extends Entity
      * Gets the active store.
      * @return Store The active store.
     */
-    public static function getActiveStore()
+    public static function getActive()
     {
         $store = new Store();
         $store->name = "Fubar Store";
