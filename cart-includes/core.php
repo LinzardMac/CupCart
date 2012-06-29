@@ -85,8 +85,8 @@ class Core
     */
     private static function loadMuPlugins()
     {
-        $plugins = Plugin::getList(MUPLUGINS_DIR);
-        foreach($plugins as $plugin)
+        self::$muPlugins = Plugin::getList(MUPLUGINS_DIR);
+        foreach(self::$muPlugins as $plugin)
             $plugin->load();
         Hooks::doAction("muplugins_loaded");
     }
@@ -96,8 +96,8 @@ class Core
     */
     private static function loadPlugins()
     {
-        $plugins = Plugin::getActive();
-        foreach($plugins as $plugin)
+        self::$plugins = Plugin::getActive();
+        foreach(self::$plugins as $plugin)
             $plugin->load();
         Hooks::doAction("plugins_loaded");
     }
