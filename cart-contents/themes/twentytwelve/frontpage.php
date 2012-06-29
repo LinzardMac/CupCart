@@ -1,9 +1,5 @@
-<html>
-    <head>
-        <title>Home :: <?=TPL::getStoreName()?></title>
-    </head>
-    <body>
-        <h1><?=TPL::getStoreName()?></h1>
+<? TPL::theHeader(); ?>
+
         <h2>Home</h2>
         <p>Welcome to the store!</p>
         
@@ -22,6 +18,5 @@
                 <h4><a href="<?=TPL::getTheUrl()?>"><?=TPL::getTheTitle()?></a></h4>
             
         <?  endwhile; endif; ?>
-        
-    </body>
-</html>
+
+<? TPL::theFooter(); ?>

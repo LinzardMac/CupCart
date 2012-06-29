@@ -15,7 +15,7 @@ class Controller_FrontPage extends Controller
         
         TPL::addProductLoop($specials, 'specials');
         TPL::addProductLoop($promoted, 'promoted');
-        
+
         View::get()->render();
     }
 }

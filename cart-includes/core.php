@@ -54,11 +54,8 @@ class Core
     */
     private static function bootstrap()
     {
-        //  configure
-        include(ROOT_DIR.'config.php');
-        
         //  load store information
-        self::$activeStore = Store::getActiveStore();
+        self::$activeStore = Store::getActive();
         View::setGlobal('store', self::$activeStore);
         
         //  load plugins
@@ -67,7 +64,8 @@ class Core
         TaxonomyType::loadAll();
         
         //  activate the current theme
-        self::$activeTheme = Theme::getActiveTheme();
+        self::$activeTheme = Theme::getActive();
+        Theme::bootstrap(self::$activeTheme);
     }
     
     /**
