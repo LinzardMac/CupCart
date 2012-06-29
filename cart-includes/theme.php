@@ -29,21 +29,27 @@ class Theme
     public static function getActiveTheme()
     {
         //  twentyten good enough for WP so...
-        return Hooks::applyFilter('active_theme', self::getThemeByName('twentytwelve'));
+        return Hooks::applyFilter('active_theme', self::getThemeByShortName('twentytwelve'));
     }
     
     /**
      * Gets a theme by name.
-     * @param string $themeName Name of the theme to get.
+     * @param string $themeShortName Name of the theme to get.
      * @return Theme The theme.
     */
-    public static function getThemeByName($themeName)
+    public static function getThemeByShortName($themeShortName)
     {
         $theme = new Theme();
-        $theme->name = $themeName;
-        $theme->version = '1.0';
-        $theme->localUri = THEMES_DIR.$theme->name.DIRECTORY_SEPARATOR;
-        $theme->httpUri = THEMES_URI.$theme->name.'/';
+        $theme->localUri = THEMES_DIR.$themeShortName.DIRECTORY_SEPARATOR;
+        $theme->httpUri = THEMES_URI.$themeShortName.'/';
+        
+        if (file_exists($theme->localUri.'style.css'))
+        {
+            $meta = File::metaData($theme->localUri.'style.css');
+            $theme->name = arr::get($meta, 'Theme Name', '');
+            $theme->version = arr::get($meta, 'Version', '');
+        }
+
         return $theme;
     }
 }
