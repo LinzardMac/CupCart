@@ -23,13 +23,75 @@ class Theme
     public $httpUri;
     
     /**
+     * Gets all installed and useable themes.
+     * @return array Array of themes.
+    */
+    public static function getAll()
+    {
+        $ret = array();
+        $dirs = File::getDirectories(THEMES_DIR);
+        foreach($dirs as $dir)
+        {
+            $shortName = basename($dir);
+            $theme = self::getByShortName($shortName);
+            if (self::isUseable($theme))
+                $ret[] = $theme;
+        }
+        return $ret;
+    }
+    
+    /**
+     * Gets if the specified theme is useable.
+     * @param mixed Either the short name of the theme or a [Theme] instance.
+     * @return bool If theme is not broken and is allowed returns true.
+    */
+    public static function isUseable($theme)
+    {
+        if (!($theme instanceof Theme)) $theme = self::getByShortName($theme);
+        if ($theme == null) return false;
+        
+        if (self::isBroken($theme)) return false;
+        if (!self::isAllowed($theme)) return false;
+        
+        return true;
+    }
+    
+    /**
+     * Gets if the specified theme is broken.
+     * @param mixed Either the short name of the theme or a [Theme] instance.
+     * @return bool
+    */
+    public static function isBroken($theme)
+    {
+        if (!($theme instanceof Theme)) $theme = self::getByShortName($theme);
+        if ($theme == null) return false;
+        
+        if ($theme->name == '') return true;
+        
+        return false;
+    }
+    
+    /**
+     * Gets if the theme is allowed to be used.
+     * @param mixed Either the short name of the theme or a [Theme] instance.
+     * @return bool
+    */
+    public static function isAllowed($theme)
+    {
+        if (!($theme instanceof Theme)) $theme = self::getByShortName($theme);
+        if ($theme == null) return false;
+        
+        return true;
+    }
+    
+    /**
      * Gets the currently active theme.
      * @return Theme The currently active theme.
     */
-    public static function getActiveTheme()
+    public static function getActive()
     {
         //  twentyten good enough for WP so...
-        return Hooks::applyFilter('active_theme', self::getThemeByShortName('twentytwelve'));
+        return Hooks::applyFilter('active_theme', self::getByShortName('twentytwelve'));
     }
     
     /**
@@ -37,7 +99,7 @@ class Theme
      * @param string $themeShortName Name of the theme to get.
      * @return Theme The theme.
     */
-    public static function getThemeByShortName($themeShortName)
+    public static function getByShortName($themeShortName)
     {
         $theme = new Theme();
         $theme->localUri = THEMES_DIR.$themeShortName.DIRECTORY_SEPARATOR;
@@ -51,5 +113,17 @@ class Theme
         }
 
         return $theme;
+    }
+    
+    /**
+     * Sets up the theme ready to be used.
+     * @param Theme $theme Theme to boot.
+    */
+    public static function bootstrap($theme)
+    {
+        if (file_exists($theme->localUri.'functions.php'))
+        {
+            include($theme->localUri.'functions.php');
+        }
     }
 }

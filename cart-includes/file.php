@@ -6,6 +6,46 @@
 class File
 {
     /**
+     * Gets an array of all directories in the specified directory without recursing.
+     * @param string $dir Directory to list files from.
+     * @return array Array of directory names.
+    */
+    public static function getDirectories($dir)
+    {
+        $ret = array();
+        $dh = opendir($dir);
+        while(($file = readdir($dh)) !== false)
+        {
+            if (is_dir($dir.$file) && $file != "." && $file != "..")
+            {
+                $ret[] = $dir.$file;
+            }
+        }
+        closedir($dh);
+        return $ret;
+    }
+    
+    /**
+     * Gets an array of all files in the specified directory without recursing.
+     * @param string $dir Directory to list files from.
+     * @return array Array of filenames.
+    */
+    public static function getFiles($dir)
+    {
+        $ret = array();
+        $dh = opendir($dir);
+        while(($file = readdir($dh)) !== false)
+        {
+            if (is_file($dir.$file))
+            {
+                $ret[] = $dir.$file;
+            }
+        }
+        closedir($dh);
+        return $ret;
+    }
+    
+    /**
      * Loads metadata stored in comments from the first 4KB of a file.
      * @param string $filename File to load data from.
      * @param resource $context Context to pass to fopen. Optional.

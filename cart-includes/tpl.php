@@ -25,6 +25,64 @@ class TPL
     }
     
     /**
+     * Prints the header to the browser.
+     * @param string $name Optional. Name of the header to include.
+    */
+    public static function theHeader($name = '')
+    {
+        echo self::getTheHeader($name);
+    }
+    
+    /**
+     * Gets the header.
+     * @param string $name Optional. Name of the header to include.
+     * @return string The header.
+    */
+    public static function getTheHeader($name = '')
+    {
+        $file = 'header';
+        if ($name != '') $file .= '-'.$name;
+        return View::get($file)->render(false);
+    }
+    
+    /**
+     * Prints the footer to the browser.
+     * @param string $name Optional. Name of the footer to include.
+    */
+    public static function theFooter($name = '')
+    {
+        echo self::getTheFooter($name);
+    }
+    
+    /**
+     * Gets the footer.
+     * @param string $name Optional. Name of the footer to include.
+     * @return string The footer.
+    */
+    public static function getTheFooter($name = '')
+    {
+        $file = 'footer';
+        if ($name != '') $file .= '-'.$name;
+        return View::get($file)->render(false);
+    }
+    
+    /**
+     * Prints the theme's URL to the browser.
+    */
+    public static function theThemeUrl()
+    {
+        echo self::getTheThemeUrl();
+    }
+    
+    /**
+     * Gets the theme's URL.
+    */
+    public static function getTheThemeUrl()
+    {
+        return Hooks::applyFilter('theme_url', Core::$activeTheme->httpUri);
+    }
+    
+    /**
      * Adds a loop for use with template tag methods.
      * @param Loop $loop The loop to add.
      * @param string $loopName Name of the loop to add, defaults to "default".
