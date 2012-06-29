@@ -61,7 +61,7 @@ class Hooks
         {
             foreach($callbacks as $callback)
             {
-                call_user_func_array($callback, array($value));
+                call_user_func_array($callback, $args);
             }
         }
     }
