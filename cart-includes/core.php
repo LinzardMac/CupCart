@@ -21,6 +21,16 @@ class Core
     public static $activeStore = null;
     
     /**
+     * @var array Array of active mu plugins.
+    */
+    public static $muPlugins = array();
+    
+    /**
+     * @var array Array of active plugins.
+    */
+    public static $plugins = array();
+    
+    /**
      * Runs Whatevercart.
     */
     public static function run()
@@ -59,6 +69,8 @@ class Core
         View::setGlobal('store', self::$activeStore);
         
         //  load plugins
+        self::loadMuPlugins();
+        self::loadPlugins();
         
         //  load taxanomy types
         TaxonomyType::loadAll();
@@ -66,6 +78,28 @@ class Core
         //  activate the current theme
         self::$activeTheme = Theme::getActive();
         Theme::bootstrap(self::$activeTheme);
+    }
+    
+    /**
+     * Loads all must-use plugins.
+    */
+    private static function loadMuPlugins()
+    {
+        $plugins = Plugin::getList(MUPLUGINS_DIR);
+        foreach($plugins as $plugin)
+            $plugin->load();
+        Hooks::doAction("muplugins_loaded");
+    }
+    
+    /**
+     * Loads all active plugins.
+    */
+    private static function loadPlugins()
+    {
+        $plugins = Plugin::getActive();
+        foreach($plugins as $plugin)
+            $plugin->load();
+        Hooks::doAction("plugins_loaded");
     }
     
     /**

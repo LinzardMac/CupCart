@@ -8,6 +8,7 @@ define("CART_VERSION", "0.1");
 define("ROOT_DIR", dirname(__FILE__).DIRECTORY_SEPARATOR);
 define("INCLUDES_DIR", ROOT_DIR.'cart-includes'.DIRECTORY_SEPARATOR);
 define("PLUGINS_DIR", ROOT_DIR.'cart-contents'.DIRECTORY_SEPARATOR.'plugins'.DIRECTORY_SEPARATOR);
+define("MUPLUGINS_DIR", ROOT_DIR.'cart-contents'.DIRECTORY_SEPARATOR.'mu-plugins'.DIRECTORY_SEPARATOR);
 define("THEMES_DIR", ROOT_DIR.'cart-contents'.DIRECTORY_SEPARATOR.'themes'.DIRECTORY_SEPARATOR);
 
 //  include config
