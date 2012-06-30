@@ -133,8 +133,8 @@ abstract class Entity extends Model
     
     /**
      * Loads entities from the database using the given metadata.
-     * @param string $metaKey Metadata key used for matching.
-     * @param mixed $metaValue Metadata value used for matching.
+     * @param mixed $metaKey Metadata key used for matching. Can also be supplied as an array.
+     * @param mixed $metaValue Metadata value used for matching. Can also be supplied as an array.
      * @param int $count Maximum number of entities to return.
      * @param int $offset Offset to start entity listing at.
      * @param mixed $type Entity type restrictions. String restricts to a single type an array will restrict to multiple types.
@@ -144,10 +144,35 @@ abstract class Entity extends Model
     */
     public static function getByMeta($metaKey, $metaValue, $count = 20, $offset = 0, $type = null, $skipCache = false, $storeInCache = true)
     {
-        $query = DB::select('e.guid','e.authorGuid','e.authoredDateTime','e.entityType')->from(array("entities","e"))->
-            join(array('entities_meta', 'm'))->on('guid','=','entityGuid')->
-            join(array('entities_metakeys', 'mk'))->on('m.metaKey','=','mk.metaKey')->
-            where('metaKeyName','=',$metaKey)->and_where('metaValue','=',$metaValue);
+        $query = DB::select('e.guid','e.authorGuid','e.authoredDateTime','e.entityType')->from(array("entities","e"));
+        if (!is_array($metaKey) && !is_array($metaValue))
+        {
+            $query->join(array('entities_meta', 'm'))->on('guid','=','entityGuid');
+            $query->join(array('entities_metakeys', 'mk'))->on('m.metaKey','=','mk.metaKey');
+            $query->where('metaKeyName','=',$metaKey)->and_where('metaValue','=',$metaValue);
+        }
+        else if (is_array($metaKey) && is_array($metaValue))
+        {
+            $i = 0;
+            foreach($metaKey as $key)
+            {
+                $query->join(array('entities_meta', 'm_'.$i))->on('guid','=','m_'.$i.'.entityGuid');
+                $query->join(array('entities_metakeys', 'mk_'.$i))->on('m_'.$i.'.metaKey','=','mk_'.$i.'.metaKey');
+                if ($i == 0)
+                    $query->where('mk_'.$i.'.metaKeyName','=',$key);
+                else
+                    $query->and_where('mk_'.$i.'.metaKeyName','=',$key);
+                $i++;
+            }
+            
+            $i = 0;
+            foreach($metaValue as $val)
+            {
+                $query->and_where('m_'.$i.'.metaValue','=',$val);
+                $i++;
+            }
+        }
+
         if ($count > 0)
             $query->limit($count);
         if ($offset > 0)

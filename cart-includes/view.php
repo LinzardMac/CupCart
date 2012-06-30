@@ -56,7 +56,10 @@ class View
         
         if ($viewName == '' || !self::exists($viewName))
         {
-            return null;
+            if (self::exists("index"))
+                $viewName = 'index';
+            else
+                return null;
         }
         
         $view = new View();
