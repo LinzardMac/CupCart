@@ -24,8 +24,9 @@ class Request
     
     public function __construct($url)
     {
-        if (substr($url, 0, (strlen(ROOT_URI) + strlen(INDEX_FILE))) == ROOT_URI.INDEX_FILE)
-            $url = substr($url, (strlen(ROOT_URI) + strlen(INDEX_FILE)));
+        if (strtolower(substr($url, 0, strlen(Core::$activeStore->baseUri))) == Core::$activeStore->baseUri)
+            $url = substr($url, strlen(Core::$activeStore->baseUri));
+        if ($url[0] != "/") $url = "/".$url;
         if (strpos($url, "://") === false)
             $url = 'http://hostname'.$url;
         $urlInfo = parse_url($url);

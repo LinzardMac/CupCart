@@ -188,7 +188,7 @@ class Core
     public static function requestIsForCart()
     {
         $request = self::parseUrl();
-        if (strtolower($request->rawPath) == '/viewCart')
+        if (strtolower($request->rawPath) == '/viewcart')
             return true;
         return false;
     }
