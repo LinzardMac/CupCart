@@ -6,9 +6,9 @@
 class Page extends Entity
 {
     /**
-     * @var string Pseudo-filename used to address the file with an URL.
+     * @var string Pseudo-uri used to address the file with an URL.
     */
-    public $filename;
+    public $uri;
     /**
      * @var string Page title.
     */

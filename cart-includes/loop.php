@@ -75,7 +75,7 @@ class Loop
     public function theTitle()
     {
         $title = '';
-        if ($this->entity instanceof PhysicalProduct)
+        if ($this->entity instanceof Product)
             $title = $this->entity->name;
         return Hooks::applyFilter('the_title', $title);
     }

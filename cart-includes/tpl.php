@@ -16,12 +16,54 @@ class TPL
     private static $activeProductLoop = null;
     
     /**
+     * @var Taxonomy The taxonomy the view is displaying if isTaxonomy.
+    */
+    private static $theTaxonomy = null;
+    
+    /**
      * Gets the name of the store.
      * @return bool Store name.
     */
     public static function getStoreName()
     {
         return Core::$activeStore->name;
+    }
+    
+    /**
+     * Sets the current view as a single taxonomy.
+     * @param Taxonomy $taxonomy The current taxonomy.
+    */
+    public static function setTaxonomy(Taxonomy $taxonomy)
+    {
+        self::$theTaxonomy = $taxonomy;
+    }
+    
+    /**
+     * Gets if the current view is for a single taxonomy.
+     * @return bool
+    */
+    public static function isTaxonomy()
+    {
+        return (self::$theTaxonomy != null);
+    }
+    
+    /**
+     * Prints the current taxonomy name to the browser.
+    */
+    public static function theTaxonomy()
+    {
+        echo self::getTheTaxonomy();
+    }
+    
+    /**
+     * Gets the current taxonomy name.
+     * @return string Taxonomy name.
+    */
+    public static function getTheTaxonomy()
+    {
+        if (self::isTaxonomy())
+            return Hooks::applyFilter("the_taxonomy", self::$theTaxonomy->name);
+        return '';
     }
     
     /**
@@ -125,7 +167,7 @@ class TPL
      * Gets the URL of the active product.
      * @return string The Url.
     */
-    public static function getTheUrl()
+    public static function getTheProductUrl()
     {
         if (self::$activeProductLoop == null)
             return '';
@@ -136,7 +178,7 @@ class TPL
      * Gets the URL of the active product.
      * @return string The Url.
     */
-    public static function getTheTitle()
+    public static function getTheProductTitle()
     {
         if (self::$activeProductLoop == null)
             return '';
