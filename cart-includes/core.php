@@ -138,6 +138,10 @@ class Core
             $entity = Entity::getByGuid($entityId);
             return $entity;
         }
+        else if (self::requestIsForCheckout())
+        {
+            return 'Checkout';
+        }
         else if (self::requestIsForCart())
         {
             return 'Cart';
@@ -151,6 +155,11 @@ class Core
             return 'FrontPage';
         }
         return null;
+    }
+    
+    public static function requestIsForCheckout()
+    {
+        return false;
     }
     
     public static function requestIsForCart()
