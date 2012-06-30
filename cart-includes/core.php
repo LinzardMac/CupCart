@@ -55,6 +55,7 @@ class Core
         
         //  create controller instance
         $controller = new $controllerType();
+        $controller->request = self::$_request;
         self::$activeController = $controller;
         
         //  resolve actionable method

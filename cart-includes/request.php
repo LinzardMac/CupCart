@@ -24,8 +24,10 @@ class Request
     
     public function __construct($url)
     {
-        if (strtolower(substr($url, 0, strlen(Core::$activeStore->baseUri))) == Core::$activeStore->baseUri)
-            $url = substr($url, strlen(Core::$activeStore->baseUri));
+        $compare = Core::$activeStore->baseUri;
+        if (substr($compare, -1, 1) == "/") $compare = substr($compare, 0, -1);
+        if (strtolower(substr($url, 0, strlen($compare))) == $compare)
+            $url = substr($url, strlen($compare));
         if ($url[0] != "/") $url = "/".$url;
         if (strpos($url, "://") === false)
             $url = 'http://hostname'.$url;
