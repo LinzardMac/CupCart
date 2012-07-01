@@ -91,7 +91,10 @@ class Theme
     public static function getActive()
     {
         //  twentyten good enough for WP so...
-        return Hooks::applyFilter('active_theme', self::getByShortName('twentytwelve'));
+        $theme = 'twentytwelve';
+        if (self::isUseable('wootique'))
+            $theme = 'wootique';
+        return Hooks::applyFilter('active_theme', self::getByShortName($theme));
     }
     
     /**
