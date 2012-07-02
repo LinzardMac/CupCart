@@ -1,8 +1,12 @@
 <? TPL::theHeader(); ?>
 
 <div id="main">
-    <h2>TPL::thePageTitle()</h2>
-    <p>This is the default page template. It doesn't contain anything yet, sorry.</p>
+    <? if (TPL::hasProducts()): while (TPL::hasProducts()): ?>
+        <h4><a href="<?=TPL::getTheProductUrl()?>"><?=TPL::getTheProductTitle()?></a></h4>
+    <? endwhile; else: ?>
+        <h2>No Products</h2>
+        <p>No products were found, sorry.</p>
+    <? endif; ?>
 </div>
 
 <? TPL::theFooter(); ?>
