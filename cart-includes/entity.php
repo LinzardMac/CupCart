@@ -39,16 +39,16 @@ abstract class Entity extends Model
     */
     public function save($newRevision = true)
     {
-		$data = array();
-		
+	$data = array();
+	
         if ($this->guid == 0)
-		{
-			
-		}
-		else
-		{
-			
-		}
+        {
+                
+        }
+        else
+        {
+                
+        }
     }
     
     /**
@@ -62,9 +62,9 @@ abstract class Entity extends Model
     public static function getByGuid($entityGuid, $type = null, $skipCache = false, $storeInCache = true)
     {
         $ret = self::getByMeta("guid", $entityGuid, 1, 0, $type, $skipCache, $storeInCache);
-		if (sizeof($ret) > 0)
-			return array_shift($ret);
-		return null;
+        if (sizeof($ret) > 0)
+                return array_shift($ret);
+        return null;
     }
     
     /**
@@ -78,7 +78,7 @@ abstract class Entity extends Model
     */
     public static function getByType($count = 20, $offset = 0, $type = null, $skipCache = false, $storeInCache = true)
     {
-		return self::getByMeta(null, null, $count, $offset, $type, $skipCache, $storeInCache);
+	return self::getByMeta(null, null, $count, $offset, $type, $skipCache, $storeInCache);
     }
     
     /**
@@ -97,67 +97,68 @@ abstract class Entity extends Model
         $query = DB::select('e.guid','e.authorGuid','e.authoredDateTime','e.entityType')->from(array("entities","e"));
 		
         if (!is_array($metaKey) && $metaKey != null)
-			$metaKey = array($metaKey);
+	    $metaKey = array($metaKey);
         if (!is_array($metaValue) && $metaValue != null)
-			$metaValue = array($metaValue);
+	    $metaValue = array($metaValue);
         
-		$doneGuidMatch = false;
-		if (sizeof($metaKey) > 0 && sizeof($metaValue) > 0)
-		{
-			$guidMatches = array();
-			foreach($metaKey as $index => $key)
-			{
-				if ($metaKey == "guid")
-				{
-					$guidMatches[] = $metaValue[$index];
-					unset($metaKey[$index]);
-					unset($metaValue[$index]);
-				}
-			}
-			
-			if (sizeof($guidMatches) > 0)
-			{
-				$query->where_open();
-				$i = 0;
-				foreach($guidMatches as $match)
-				{
-					if ($i == 0)
-						$query->where('e.guid','=',$match);
-					else
-						$query->or_where('e.guid','=',$match);
-					$i++;
-				}
-				$query->where_close();
-			}
-		}
+        $doneGuidMatch = false;
+        if (sizeof($metaKey) > 0 && sizeof($metaValue) > 0)
+        {
+            $guidMatches = array();
+            foreach($metaKey as $index => $key)
+            {
+                if ($key == "guid")
+                {
+                    $guidMatches[] = $metaValue[$index];
+                    unset($metaKey[$index]);
+                    unset($metaValue[$index]);
+                }
+            }
+            
+            if (sizeof($guidMatches) > 0)
+            {
+                $doneGuidMatch = true;
+                $query->where_open();
+                $i = 0;
+                foreach($guidMatches as $match)
+                {
+                    if ($i == 0)
+                        $query->where('e.guid','=',$match);
+                    else
+                        $query->or_where('e.guid','=',$match);
+                    $i++;
+                }
+                $query->where_close();
+            }
+        }
 		
-		if (sizeof($metaKey) > 0 && sizeof($metaValue) > 0)
-		{
-			if ($doneGuidMatch)
-				$query->and_where_open();
-			
-			$i = 0;
-			foreach($metaKey as $key)
-			{
-				$query->join(array('entities_meta', 'm_'.$i))->on('guid','=','m_'.$i.'.entityGuid');
-				$query->join(array('entities_metakeys', 'mk_'.$i))->on('m_'.$i.'.metaKey','=','mk_'.$i.'.metaKey');
-				if ($i == 0)
-					$query->where('mk_'.$i.'.metaKeyName','=',$key);
-				else
-					$query->and_where('mk_'.$i.'.metaKeyName','=',$key);
-				$i++;
-			}
-			
-			$i = 0;
-			foreach($metaValue as $val)
-			{
-				$query->and_where('m_'.$i.'.metaValue','=',$val);
-				$i++;
-			}
-			
-			if ($doneGuidMatch)
-				$query->and_where_close();
-		}
+        if (sizeof($metaKey) > 0 && sizeof($metaValue) > 0)
+        {
+            if ($doneGuidMatch)
+                $query->and_where_open();
+                
+            $i = 0;
+            foreach($metaKey as $key)
+            {
+                $query->join(array('entities_meta', 'm_'.$i))->on('guid','=','m_'.$i.'.entityGuid');
+                $query->join(array('entities_metakeys', 'mk_'.$i))->on('m_'.$i.'.metaKey','=','mk_'.$i.'.metaKey');
+                if ($i == 0)
+                    $query->where('mk_'.$i.'.metaKeyName','=',$key);
+                else
+                    $query->and_where('mk_'.$i.'.metaKeyName','=',$key);
+                $i++;
+            }
+            
+            $i = 0;
+            foreach($metaValue as $val)
+            {
+                $query->and_where('m_'.$i.'.metaValue','=',$val);
+                $i++;
+            }
+            
+            if ($doneGuidMatch)
+                $query->and_where_close();
+        }
 		
         if ($count > 0)
             $query->limit($count);
