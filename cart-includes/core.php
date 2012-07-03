@@ -73,6 +73,7 @@ class Core
         //  load store information
         self::$activeStore = Store::getActive();
         View::setGlobal('store', self::$activeStore);
+        date_default_timezone_set(self::$activeStore->timezone);
         
         //  load plugins
         self::loadMuPlugins();

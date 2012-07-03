@@ -13,9 +13,14 @@ class Store extends Entity
     public $hostname;
     
     /**
-     * Base URI of the store.
+     * @var string Base URI of the store.
     */
     public $baseUri;
+    
+    /**
+     * @var string Timezone setting for the store.
+    */
+    public $timezone;
     
     /**
      * Gets the active store.
@@ -27,6 +32,7 @@ class Store extends Entity
         $store->name = "Fubar Store";
         $store->hostname = $_SERVER['HTTP_HOST'];
         $store->baseUri = '/whatevercart/index.php/';
+        $store->timezone = 'America/Chicago';
         return $store;
     }
 }
