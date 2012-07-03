@@ -44,7 +44,34 @@ abstract class Entity extends Model
     public function __construct()
     {
         $this->guid = 0;
+		$this->revisionId = 0;
     }
+	
+	/**
+	 * Gets all revisions of the entity.
+	 * @return array
+	*/
+	public function getRevisions($metaKey = null, $metaValue = null, $count = 0, $offset = 0)
+	{
+		$key = array('guid');
+		$value = array($this->guid);
+		if ($metaKey != null && $metaValue != null)
+		{
+			if (is_array($metaKey) && is_array($metaValue))
+			{
+				foreach($metaKey as $k)
+					$key[] = $k;
+				foreach($metaValue as $v)
+					$value[] = $v;
+			}
+			else
+			{
+				$key[] = $metaKey;
+				$value[] = $metaValue;
+			}
+		}
+		return Entity::getByMeta($key, $value, $count, $offset, get_class($this), self::REVISIONSTATUS_OUTDATED);
+	}
     
     /**
      * Saves the entity to the database.
@@ -61,23 +88,28 @@ abstract class Entity extends Model
         if ($this->revisionStatus == null || $this->revisionStatus < 1)
             $this->revisionStatus = self::REVISIONSTATUS_ACTIVE;
         
-	if ($this->guid == 0)
+		if ($this->guid == 0)
         {
-            //  insert new entity
-            //  get it back from the db
-            //  copy over meta data
-            //  save
+			$newGuid = DB::select('MAX(guid) as maxGuid')->from('entities')->execute()->get('maxGuid');
+			$newGuid++;
+			$data = array(
+				'guid'	=> $newGuid
+			);
+			list($revisionId, $affectedRows) = DB::insert('entities',array_keys($data))->values($data)->execute();
+			$this->guid = $newGuid;
+			$this->revisionId = $revisionId;
+			$newRevision = false;
         }
         
+		$data = array(
+			'guid'              => $this->guid,
+			'authorGuid'        => $this->authorGuid,
+			'authoredDateTime'  => $this->authoredDateTime,
+			'entityType'        => $this->entityType,
+			'revisionStatus'    => $this->revisionStatus
+		);
         if ($newRevision)
         {
-            $data = array(
-                'guid'              => $this->guid,
-                'authorGuid'        => $this->authorGuid,
-                'authoredDateTime'  => $this->authoredDateTime,
-                'entityType'        => $this->entityType,
-                'revisionStatus'    => $this->revisionStatus
-            );
             $revisionId = -1;
             try
             {
@@ -90,6 +122,7 @@ abstract class Entity extends Model
             if ($revisionId < 0)
                 return;
             
+			$oldRevisionId = $this->revisionId;
             $this->revisionId = $revisionId;
             
             //  update old records to be inactive
@@ -98,54 +131,168 @@ abstract class Entity extends Model
                 ->execute();
             
             //  store meta data
-            $vars = get_class_vars($this->entityType);
-            $defaultVars = get_class_vars("Entity");
-            foreach($defaultVars as $metaKey => $metaValue)
-            {
-                //  special var that has to be allowed to save
-                if ($metaKey == 'belongsToTaxonomies')
-                    continue;
-                if (array_key_exists($metaKey, $vars))
-                    unset($vars[$metaKey]);
-            }
-            foreach($vars as $metaKey => $metaValue)
-            {
-                $metaKeyId = self::getMetaKeyId($metaKey);
-                if ($this->{$metaKey} != null)
-                {
-                    if (is_array($this->{$metaKey}))
-                    {
-                        foreach($this->{$metaKey} as $val)
-                        {
-                            $data = array(
-                                'entityGuid'    => $this->guid,
-                                'entityRevision'=> $this->revisionId,
-                                'autoload'      => 1,
-                                'metaKey'       => $metaKeyId,
-                                'metaValue'     => $val
-                            );
-                            DB::insert('entities_meta', array_keys($data))->values($data)->execute();
-                        }
-                    }
-                    else
-                    {
-                        $data = array(
-                            'entityGuid'    => $this->guid,
-                            'entityRevision'=> $this->revisionId,
-                            'autoload'      => 1,
-                            'metaKey'       => $metaKeyId,
-                            'metaValue'     => $this->{$metaKey}
-                        );
-                        DB::insert('entities_meta', array_keys($data))->values($data)->execute();
-                    }
-                }
-            }
+            $this->saveMeta(false, $oldRevisionId);
         }
         else
         {
-            
+            DB::update('entities')->set($data)->where('guid','=',$this->guid)->and_where('revisionId','=',$this->revisionId)->execute();
+			$this->saveMeta(true, $this->revisionId);
         }
     }
+	
+	/**
+	 * Gets meta data for the entity.
+	 * @param string $metaKey Optional. The meta key; leave blank to retrieve all meta data.
+	 * @return mixed The meta data, null on failure.
+	*/
+	public function getMeta($metaKey = '')
+	{
+		$query = DB::select()->from('entities_meta')->where('entityGuid','=',$this->guid)->and_where('entityRevision','=',$this->revisionId)->and_where('autoload','=',0);
+		$query->join('entities_metakeys')->on('entities_meta.metaKey','=','entities_metakeys.metaKey');
+		$query->order_by('metaId', 'ASC');
+		if ($metaKey != '')
+		{
+			$query->where('entities_metakeys.metaKeyName','=',$metaKey);
+		}
+		$rows = $query->execute();
+
+		$ret = array();
+		foreach($rows as $row)
+		{
+			if (array_key_exists($row['metaKeyName'], $ret))
+			{
+				if (!is_array($ret[$row['metaKeyName']]))
+					$ret[$row['metaKeyName']] = array($ret[$row['metaKeyName']]);
+				$ret[$row['metaKeyName']][] = $row['metaValue'];
+			}
+			else
+				$ret[$row['metaKeyName']] = $row['metaValue'];
+		}
+
+		if ($metaKey == '')
+			return $ret;
+		return array_shift($ret);
+	}
+	
+	/**
+	 * Sets meta data for the entity.
+	 * @param string $metaKey Meta key.
+	 * @param mixed $metaValue Meta value. Objects and non-numerically indexed arrays will be serialized and will not be searchable.
+	*/
+	public function setMeta($metaKey, $metaValue)
+	{
+		$serialize = false;
+		if (is_object($metaValue))
+			$serialize = true;
+		else if (is_array($metaValue))
+		{
+			$keys = array_keys($metaValue);
+			foreach($keys as $key)
+			{
+				if (!is_numeric($key))
+				{
+					$serialize = true;
+					break;
+				}
+			}
+		}
+		else
+			$metaValue = array($metaValue);
+		
+		$metaKeyId = self::getMetaKeyId($metaKey);
+		
+		DB::delete('entities_meta')->where('entityGuid','=',$this->guid)->and_where('entityRevision','=',$this->revisionId)
+			->and_where('metaKey','=',$metaKeyId)->execute();
+		foreach($metaValue as $v)
+		{
+			$data = array(
+				'entityGuid'    => $this->guid,
+				'entityRevision'=> $this->revisionId,
+				'autoload'      => 0,
+				'metaKey'       => $metaKeyId,
+				'metaValue'     => $v
+			);
+			DB::insert('entities_meta', array_keys($data))->values($data)->execute();
+		}
+	}
+	
+	private function saveMeta($overwrite, $oldRevisionId)
+	{
+		//  load any non-autoload meta data
+		$revisionIdBackup = $this->revisionId;
+		$this->revisionId = $oldRevisionId;
+		$allMeta = $this->getMeta();
+		$this->revisionId = $revisionIdBackup;
+		
+		if ($overwrite)
+		{
+			//  delete the existing metadata
+			DB::delete('entities_meta')->where('entityGuid','=',$this->guid)->and_where('entityRevision','=',$this->revisionId)->execute();
+		}
+		
+		//  save non-autoload meta data
+		foreach($allMeta as $key => $val)
+		{
+			$metaKeyId = self::getMetaKeyId($key);
+			if (!is_array($val))
+				$val = array($val);
+			foreach($val as $v)
+			{
+				$data = array(
+					'entityGuid'    => $this->guid,
+					'entityRevision'=> $this->revisionId,
+					'autoload'      => 0,
+					'metaKey'       => $metaKeyId,
+					'metaValue'     => $v
+				);
+				DB::insert('entities_meta', array_keys($data))->values($data)->execute();
+			}
+		}
+		
+		//  save entity attributes as autoload meta
+		$vars = get_class_vars($this->entityType);
+		$defaultVars = get_class_vars("Entity");
+		foreach($defaultVars as $metaKey => $metaValue)
+		{
+			//  special var that has to be allowed to save
+			if ($metaKey == 'belongsToTaxonomies')
+				continue;
+			if (array_key_exists($metaKey, $vars))
+				unset($vars[$metaKey]);
+		}
+		foreach($vars as $metaKey => $metaValue)
+		{
+			$metaKeyId = self::getMetaKeyId($metaKey);
+			if ($this->{$metaKey} != null)
+			{
+				if (is_array($this->{$metaKey}))
+				{
+					foreach($this->{$metaKey} as $val)
+					{
+						$data = array(
+							'entityGuid'    => $this->guid,
+							'entityRevision'=> $this->revisionId,
+							'autoload'      => 1,
+							'metaKey'       => $metaKeyId,
+							'metaValue'     => $val
+						);
+						DB::insert('entities_meta', array_keys($data))->values($data)->execute();
+					}
+				}
+				else
+				{
+					$data = array(
+						'entityGuid'    => $this->guid,
+						'entityRevision'=> $this->revisionId,
+						'autoload'      => 1,
+						'metaKey'       => $metaKeyId,
+						'metaValue'     => $this->{$metaKey}
+					);
+					DB::insert('entities_meta', array_keys($data))->values($data)->execute();
+				}
+			}
+		}
+	}
     
     /**
      * Gets the ID of the given meta key. If it doesn't exist the key is created.
@@ -188,7 +335,7 @@ abstract class Entity extends Model
     */
     public static function getByType($count = 20, $offset = 0, $type = null, $revisionStatus = self::REVISIONSTATUS_ACTIVE, $skipCache = false, $storeInCache = true)
     {
-	return self::getByMeta(null, null, $count, $offset, $type, $revisionStatus, $skipCache, $storeInCache);
+		return self::getByMeta(null, null, $count, $offset, $type, $revisionStatus, $skipCache, $storeInCache);
     }
     
     /**
@@ -326,6 +473,7 @@ abstract class Entity extends Model
             }
         }
         $query->and_where_close();
+		$query->order_by('metaId', 'ASC');
 
         if ($i > 0)
         {
@@ -335,7 +483,8 @@ abstract class Entity extends Model
                 $obj = $ret[$keys[$row['entityGuid'].':'.$row['entityRevision']]];
                 if ($obj->{$row['metaKeyName']} != null)
                 {
-                    $obj->{$row['metaKeyName']} = array($obj->{$row['metaKeyName']});
+					if (!is_array($obj->{$row['metaKeyName']}))
+						$obj->{$row['metaKeyName']} = array($obj->{$row['metaKeyName']});
                     $obj->{$row['metaKeyName']}[] = $row['metaValue'];
                 }
                 else
