@@ -81,10 +81,22 @@ class Core
         
         //  load taxanomy types
         Taxonomy::loadAll();
-        
+		
         //  activate the current theme
         self::$activeTheme = Theme::getActive();
         Theme::bootstrap(self::$activeTheme);
+		
+		//  load widgets
+		Widget::register("Widget_Cart");
+		Widget::register("Widget_Taxonomy");
+		Hooks::doAction("register_widgets");
+		
+		//  add widgets to widgetspaces based on settings
+		$spaces = WidgetSpace::getAll();
+		foreach($spaces as $space)
+		{
+			$space->add('Widget_Taxonomy', array('taxonomy' => Category::getTaxonomy()->guid));
+		}
     }
     
     /**

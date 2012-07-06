@@ -38,6 +38,14 @@ class WidgetSpace
      * @var string HTML markup appended to widget titles.
     */
     public $afterTitle;
+	/**
+	 * @var array Array of widget class names.
+	*/
+	public $widgets;
+	/**
+	 * @var array Array of widget options.
+	*/
+	public $widgetOpts;
     
     /**
      * Register a widget space.
@@ -88,6 +96,29 @@ class WidgetSpace
         
         self::$spaces[$obj->name] = $obj;
     }
+	
+	/**
+	 * Adds a widget to the widget space.
+	 * @param string $widget The widget to add.
+	 * @param array $opts The array of options stored for this widget instance.
+	*/
+	public function add($widget, $opts)
+	{
+		if (class_exists($widget) && Utils::classExtends($widget, 'Widget'))
+		{
+			$this->widgets[] = $widget;
+			$this->widgetOpts[] = $opts;
+		}
+	}
+	
+	/**
+	 * Gets an array of all widget spaces.
+	 * @return array
+	*/
+	public static function getAll()
+	{
+		return self::$spaces;
+	}
     
     /**
      * Prints the specified WidgetSpace to the browser.
@@ -105,6 +136,35 @@ class WidgetSpace
     */
     public static function getTheSpace($name = '')
     {
-        return '';
+		$space = null;
+		if (array_key_exists($name, self::$spaces))
+		{
+			$space = self::$spaces[$name];
+		}
+		else
+		{
+			//  try and find a default
+		}
+		
+		$html = '<ul>';
+		foreach($space->widgets as $index => $widgetClass)
+		{
+			$opts  = $space->widgetOpts[$index];
+			$obj = new $widgetClass();
+			$args = array(
+				'beforeTitle'	=> sprintf($space->beforeTitle, $space->id),
+				'afterTitle'	=> sprintf($space->afterTitle, $space->id),
+				'beforeWidget'	=> sprintf($space->beforeWidget, $space->id),
+				'afterWidget'	=> sprintf($space->afterWidget, $space->id)
+			);
+			foreach($opts as $name => $value)
+				$args[$name] = $value;
+			ob_start();
+			$obj->display($args);
+			$html .= ob_get_contents();
+			ob_end_clean();
+		}
+		$html .= '</ul>';
+        return $html;
     }
 }

@@ -15,4 +15,28 @@ class Utils
             return parse_str($args);
         return $args;
     }
+	
+	/**
+	 * Determines if the specified class is a child of the specified parent class.
+	 * @param string $class Name of the child class.
+	 * @param string $parent Name of the parent class.
+	 * @return bool
+	*/
+	public static function classExtends($class, $parent)
+	{
+		if (!class_exists($class))
+			return false;
+		if (!class_exists($parent))
+			return false;
+		$testClass = $class;
+		while (($testParent = get_parent_class($testClass)) != false)
+		{
+			if (strtolower($testParent) == strtolower($parent))
+			{
+				return true;
+			}
+			$testClass = $testParent;
+		}
+		return false;
+	}
 }

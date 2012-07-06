@@ -52,4 +52,45 @@ class Taxonomy extends Entity
         }
         return null;
     }
+	
+	    /**
+     * Print a list of categories to the browser.
+    */
+    public static function display($args = array())
+    {
+        $args = Utils::getArgs($args);
+        $terms = self::get($args);
+        self::_print($terms, 0, $args);
+    }
+    
+    private static function _print($terms, $parent, $args)
+    {
+        $first = true;
+        foreach($terms as $term)
+        {
+            if ($first)
+            {
+                echo '<ul class="'.arr::get($args,'ul_class').'">';
+                $first = false;
+            }
+            if ($term->parent == $parent)
+            {
+                echo '<li class="'.arr::get($args,'li_class').'"><a href="#">'.$term->name.'</a>';
+                self::_print($terms, $term->guid, $args);
+                echo '</li>';
+            }
+        }
+        if (!$first)
+            echo '</ul>';
+    }
+    
+    /**
+     * Gets an array of categories.
+     * @return array
+    */
+    public static function get($args = array())
+    {
+        $args = Utils::getArgs($args);
+        return Entity::getByMeta("taxonomyGuid", arr::get($args,'taxonomy',0), 0, 0, 'TaxonomyTerm');
+    }
 }
