@@ -79,10 +79,6 @@ abstract class Entity extends Model
     */
     public function save($newRevision = true)
     {
-        //  todo: save non-autoloaded metadata also
-        //  todo: save without a new revision
-        //  todo: save a new entity (new GUID)
-        
         if ($this->entityType == null || $this->entityType == '')
             $this->entityType = get_class($this);
         if ($this->revisionStatus == null || $this->revisionStatus < 1)

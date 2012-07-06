@@ -16,6 +16,16 @@ class TaxonomyTerm extends Entity
     public $name;
     
     /**
+     * @var int GUID of the parent taxonomy term, 0 if has no parent.
+    */
+    public $parent;
+    
+    public function __construct()
+    {
+        $this->parent = 0;
+    }
+    
+    /**
      * Gets a taxonomy term using a taxonomy and a taxonomy term id.
      * @param mixed $type Optional. The taxonomy. Either a string, an integer or a [Taxonomy] instance.
      * @param mixed $term Either a string or an integer identifying the taxonomy term.
