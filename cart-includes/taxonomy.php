@@ -1,57 +1,55 @@
 <?php
 
 /**
- * A taxonomy.
+ * Taxonomy type API.
 */
 class Taxonomy extends Entity
 {
     /**
-     * @var int [TaxonomyType] GUID.
+     * @var array Loaded taxonomy types.
     */
-    public $typeGuid;
+    private static $types = array();
     
     /**
-     * @var string Name of the taxanomy item.
+     * @var string Name of the taxonomy.
     */
     public $name;
     
     /**
-     * Gets a taxonomy using a taxonomy type and a taxonomy id.
-     * @param mixed $type Optional. The taxonomy type. Either a string, an integer or a [TaxonomyType] instance.
-     * @param mixed $taxonomy Either a string or an integer identifying the taxonomy.
-     * @return Taxonomy A taxonomy if found, null otherwise.
+     * Loads all taxonomies into memory.
     */
-    public static function get($taxonomy, $type = null)
+    public static function loadAll()
     {
-        $taxType = $type;
-        if ($taxType != null)
+        self::$types = Entity::getByType(0, 0, 'Taxonomy');
+    }
+    
+    /**
+     * Gets a taxonomy by name (must have been loaded first).
+     * @param string $name Taxonomy type name.
+     * @return TaxonomyType Taxonomy type found, null otherwise.
+    */
+    public static function getFromCacheByName($name)
+    {
+        foreach(self::$types as $type)
         {
-            if (!($taxType instanceof TaxonomyType))
-            {
-                if (is_numeric($taxType))
-                    $taxType = TaxonomyType::getFromCacheByGuid($taxType);
-                else
-                    $taxType = TaxonomyType::getFromCacheByName($taxType);
-            }
-            if ($taxType == null)
-                return null;
-            
-            if (is_numeric($taxonomy))
-                $entities = Entity::getByMeta(array("typeGuid", "guid"), array($taxType->guid, $taxonomy), 1, 0, 'Taxonomy');
-            else
-                $entities = Entity::getByMeta(array("typeGuid", "name"), array($taxType->guid, $taxonomy), 1, 0, 'Taxonomy');
+            if (strtolower($type->name) == strtolower($name))
+                return $type;
         }
-        else
+        return null;
+    }
+    
+    /**
+     * Gets a taxonomy by guid (must have been loaded first).
+     * @param int $guid Taxonomy type GUID.
+     * @return TaxonomyType Taxonomy type found, null otherwise.
+    */
+    public static function getFromCacheByGuid($guid)
+    {
+        foreach(self::$types as $type)
         {
-            if (is_numeric($taxonomy))
-                $entities = Entity::getByMeta("guid", $taxonomy, 1, 0, 'Taxonomy');
-            else
-                $entities = Entity::getByMeta("name", $taxonomy, 1, 0, 'Taxonomy');
+            if ($type->guid == $guid)
+                return $type;
         }
-        
-        if (sizeof($entities) < 0)
-            return null;
-        else
-            return array_shift($entities);
+        return null;
     }
 }

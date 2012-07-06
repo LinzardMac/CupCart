@@ -80,7 +80,7 @@ class Core
         self::loadPlugins();
         
         //  load taxanomy types
-        TaxonomyType::loadAll();
+        Taxonomy::loadAll();
         
         //  activate the current theme
         self::$activeTheme = Theme::getActive();

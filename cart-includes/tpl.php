@@ -16,9 +16,9 @@ class TPL
     private static $activeProductLoop = null;
     
     /**
-     * @var Taxonomy The taxonomy the view is displaying if isTaxonomy.
+     * @var TaxonomyTerm The taxonomy the view is displaying if isTaxonomy.
     */
-    private static $theTaxonomy = null;
+    private static $theTaxonomyTerm = null;
     
     /**
      * Gets the name of the store.
@@ -33,36 +33,36 @@ class TPL
      * Sets the current view as a single taxonomy.
      * @param Taxonomy $taxonomy The current taxonomy.
     */
-    public static function setTaxonomy(Taxonomy $taxonomy)
+    public static function setTaxonomyTerm(TaxonomyTerm $taxonomyTerm)
     {
-        self::$theTaxonomy = $taxonomy;
+        self::$theTaxonomyTerm = $taxonomyTerm;
     }
     
     /**
-     * Gets if the current view is for a single taxonomy.
+     * Gets if the current view is for a single taxonomy term.
      * @return bool
     */
-    public static function isTaxonomy()
+    public static function isTaxonomyTerm()
     {
-        return (self::$theTaxonomy != null);
+        return (self::$theTaxonomyTerm != null);
     }
     
     /**
      * Prints the current taxonomy name to the browser.
     */
-    public static function theTaxonomy()
+    public static function theTaxonomyTerm()
     {
-        echo self::getTheTaxonomy();
+        echo self::getTheTaxonomyTerm();
     }
     
     /**
-     * Gets the current taxonomy name.
-     * @return string Taxonomy name.
+     * Gets the current taxonomy term name.
+     * @return string Taxonomy term name.
     */
-    public static function getTheTaxonomy()
+    public static function getTheTaxonomyTerm()
     {
-        if (self::isTaxonomy())
-            return Hooks::applyFilter("the_taxonomy", self::$theTaxonomy->name);
+        if (self::isTaxonomyTerm())
+            return Hooks::applyFilter("the_taxonomy", self::$theTaxonomyTerm->name);
         return '';
     }
     
