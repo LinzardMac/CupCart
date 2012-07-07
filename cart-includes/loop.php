@@ -90,6 +90,20 @@ class Loop
     }
     
     /**
+     * Gets the URL used to add an entity to the shopping cart.
+     * @return string The entity's URL.
+    */
+    public function theAddToCartUrl()
+    {
+        if ($this->entity != null)
+        {
+            $store = Core::$activeStore;
+            return Hooks::applyFilter('the_addtocart_url',$store->baseUri.'cart/add/'.$this->entity->guid);
+        }
+        return '';
+    }
+    
+    /**
      * Gets the title of the current entity.
      * @return string The entity's title.
     */

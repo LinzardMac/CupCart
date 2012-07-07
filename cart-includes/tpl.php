@@ -199,6 +199,17 @@ class TPL
     }
     
     /**
+     * Gets the URL to add the active product to the shopping cart.
+     * @return string The Url.
+    */
+    public static function getAddToCartUrl()
+    {
+        if (self::$activeProductLoop == null)
+            return '';
+        return self::$activeProductLoop->theAddToCartUrl();
+    }
+    
+    /**
      * Gets the URL of the active product.
      * @return string The Url.
     */

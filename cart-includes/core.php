@@ -194,7 +194,7 @@ class Core
     public static function requestIsForCheckout()
     {
         $request = self::parseUrl();
-        if (strtolower($request->rawPath) == '/checkout')
+        if (sizeof($request->path) > 0 && strtolower($request->path[0]) == 'checkout')
             return true;
         return false;
     }
@@ -202,7 +202,7 @@ class Core
     public static function requestIsForCart()
     {
         $request = self::parseUrl();
-        if (strtolower($request->rawPath) == '/viewcart')
+        if (sizeof($request->path) > 0 && strtolower($request->path[0]) == 'cart')
             return true;
         return false;
     }
