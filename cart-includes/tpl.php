@@ -164,6 +164,30 @@ class TPL
     }
     
     /**
+     * Gets if the active product is the last product in the loop.
+     * @return bool
+    */
+    public static function isLastProduct()
+    {
+        if (self::$activeProductLoop == null)
+            return false;
+        if (self::$activeProductLoop->loopPosition() == self::$activeProductLoop->entityCount() - 1)
+            return true;
+        return false;
+    }
+    
+    /**
+     * Gets the current product position pointer for the active product loop.
+     * @return int
+    */
+    public static function productPosition()
+    {
+        if (self::$activeProductLoop == null)
+            return 0;
+        return self::$activeProductLoop->loopPosition();
+    }
+    
+    /**
      * Gets the URL of the active product.
      * @return string The Url.
     */
