@@ -12,7 +12,11 @@ class Utils
     public static function getArgs($args = array())
     {
         if (!is_array($args))
-            return parse_str($args);
+	{
+            $parsed = array();
+	    parse_str($args, $parsed);
+	    return $parsed;
+	}
         return $args;
     }
 	

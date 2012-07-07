@@ -46,6 +46,24 @@ abstract class Entity extends Model
         $this->guid = 0;
 		$this->revisionId = 0;
     }
+    
+    /**
+     * Gets a single property. In the case of an array the first element is returned.
+     * @param string $propertyName
+     * @return mixed Property value on success, null on failure.
+    */
+    public function getProperty($propertyName)
+    {
+        if (isset($this->{$propertyName}))
+        {
+            if (is_array($this->{$propertyName}))
+            {
+                return $this->{$propertyName}[0];
+            }
+            return $this->{$propertyName};
+        }
+        return null;
+    }
 	
 	/**
 	 * Gets all revisions of the entity.
@@ -334,21 +352,9 @@ abstract class Entity extends Model
 		return self::getByMeta(null, null, $count, $offset, $type, $revisionStatus, $skipCache, $storeInCache);
     }
     
-    /**
-     * Loads entities from the database using the given metadata.
-     * @param mixed $metaKey Metadata key used for matching. Can also be supplied as an array.
-     * @param mixed $metaValue Metadata value used for matching. Can also be supplied as an array.
-     * @param int $count Maximum number of entities to return.
-     * @param int $offset Offset to start entity listing at.
-     * @param mixed $type Entity type restrictions. String restricts to a single type an array will restrict to multiple types.
-     * @param bool $skipCache When set to true any cached instances of the entity requested will be ignore. Defaults to false.
-     * @param bool $storeInCache When set to true a copy of the entity will be saved for later retreival in the cache. Defaults to true.
-     * @return array
-    */
-    public static function getByMeta($metaKey = null, $metaValue = null, $count = 20, $offset = 0, $type = null, $revisionStatus = self::REVISIONSTATUS_ACTIVE, $skipCache = false, $storeInCache = true)
+    private static function _buildMetaQuery($query, $metaKey = null, $metaValue = null, $type = null, $revisionStatus = self::REVISIONSTATUS_ACTIVE)
     {
-        $query = DB::select('e.guid','e.authorGuid','e.authoredDateTime','e.entityType','e.revisionId','e.revisionStatus')
-            ->from(array("entities","e"))->where('revisionStatus','=',$revisionStatus);
+        $query->from(array("entities","e"))->where('revisionStatus','=',$revisionStatus);
 		
         if (!is_array($metaKey) && $metaKey != null)
 	    $metaKey = array($metaKey);
@@ -391,6 +397,42 @@ abstract class Entity extends Model
             if ($doneGuidMatch)
                 $query->and_where_open();
                 
+            //  metaKeys that are identical should be an OR not AND
+            $keys = array();
+            foreach($metaKey as $i => $key)
+            {
+                if (!array_key_exists($key, $keys))
+                    $keys[$key] = array();
+                $keys[$key][] = $metaValue[$i];
+            }
+            
+            $i = 0;
+            foreach($keys as $key => $values)
+            {
+                $query->join(array('entities_meta', 'm_'.$i))->on('guid','=','m_'.$i.'.entityGuid')->on('revisionId','=','m_'.$i.'.entityRevision');
+                $query->join(array('entities_metakeys', 'mk_'.$i))->on('m_'.$i.'.metaKey','=','mk_'.$i.'.metaKey');
+                $query->where('mk_'.$i.'.metaKeyName','=',$key);
+                $query->and_where_open();
+                $j = 0;
+                foreach($values as $value)
+                {
+                    if ($j == 0)
+                        $query->where('m_'.$i.'.metaValue','=',$value);
+                    else
+                        $query->or_where('m_'.$i.'.metaValue','=',$value);
+                    $j++;
+                }
+                $query->and_where_close();
+                /*
+                if ($i == 0)
+                    $query->where('mk_'.$i.'.metaKeyName','=',$key);
+                else
+                    $query->and_where('mk_'.$i.'.metaKeyName','=',$key);
+                */
+                $i++;
+            }
+            
+            /*
             $i = 0;
             foreach($metaKey as $key)
             {
@@ -409,15 +451,11 @@ abstract class Entity extends Model
                 $query->and_where('m_'.$i.'.metaValue','=',$val);
                 $i++;
             }
-            
+            */
             if ($doneGuidMatch)
                 $query->and_where_close();
         }
-		
-        if ($count > 0)
-            $query->limit($count);
-        if ($offset > 0)
-            $query->offset($offset);
+	
         if ($type != null)
         {
             if (is_array($type) && sizeof($type) > 0)
@@ -442,6 +480,46 @@ abstract class Entity extends Model
                 $query->and_where('e.entityType','=',$type);
             }
         }
+        
+        return $query;
+    }
+    
+    /**
+     * Counts entities from the database using the given metadata.
+     * @param mixed $metaKey Metadata key used for matching. Can also be supplied as an array.
+     * @param mixed $metaValue Metadata value used for matching. Can also be supplied as an array.
+     * @param mixed $type Entity type restrictions. String restricts to a single type an array will restrict to multiple types.
+     * @return int
+    */
+    public static function getCountByMeta($metaKey = null, $metaValue = null, $type = null, $revisionStatus = self::REVISIONSTATUS_ACTIVE)
+    {
+        $query = DB::select('COUNT(DISTINCT revisionId) AS mycount');
+        $query = self::_buildMetaQuery($query, $metaKey, $metaValue, $type, $revisionStatus);
+        $result = $query->execute();
+        return $result->get('mycount');
+    }
+    
+    /**
+     * Loads entities from the database using the given metadata.
+     * @param mixed $metaKey Metadata key used for matching. Can also be supplied as an array.
+     * @param mixed $metaValue Metadata value used for matching. Can also be supplied as an array.
+     * @param int $count Maximum number of entities to return.
+     * @param int $offset Offset to start entity listing at.
+     * @param mixed $type Entity type restrictions. String restricts to a single type an array will restrict to multiple types.
+     * @param bool $skipCache When set to true any cached instances of the entity requested will be ignore. Defaults to false.
+     * @param bool $storeInCache When set to true a copy of the entity will be saved for later retreival in the cache. Defaults to true.
+     * @return array
+    */
+    public static function getByMeta($metaKey = null, $metaValue = null, $count = 20, $offset = 0, $type = null, $revisionStatus = self::REVISIONSTATUS_ACTIVE, $skipCache = false, $storeInCache = true)
+    {
+        $query = DB::select('e.guid','e.authorGuid','e.authoredDateTime','e.entityType','e.revisionId','e.revisionStatus');
+        $query = self::_buildMetaQuery($query, $metaKey, $metaValue, $type, $revisionStatus);
+        if ($count > 0)
+            $query->limit($count);
+        if ($offset > 0)
+            $query->offset($offset);
+        $query->group_by('e.revisionId');
+        
         $rows = $query->execute();
 
         $ret = array();

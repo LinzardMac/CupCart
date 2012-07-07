@@ -26,6 +26,54 @@ class TaxonomyTerm extends Entity
     }
     
     /**
+     * Gets a url to the specific taxonomy term.
+     * @return string
+    */
+    public function getUrl()
+    {
+        $taxonomy = Taxonomy::getFromCacheByGuid($this->getProperty("taxonomyGuid"));
+        
+        $taxonomyName = '';
+        if ($taxonomy->name != "Category")
+            $taxonomyName = rawurlencode($taxonomy->name).':';
+        
+        $url = Core::$activeStore->baseUri.'store/';
+        $termName = rawurlencode($this->name);
+        $parent = $this->parent;
+        while ($parent != 0)
+        {
+            //  this needs to be made faster somehow, doing lookups is not good enough
+            $parentTerm = Entity::getByGuid($parent, 'TaxonomyTerm');
+            $termName = rawurlencode($parentTerm->name).':'.$termName;
+            $parent = $parentTerm->parent;
+        }
+        $url .= $taxonomyName.$termName;
+        return Hooks::applyFilter("taxonomy_term_url", $url);
+    }
+    
+    /**
+     * Gets an array of children taxonomy terms.
+     * @param bool $recursive Optional. When set to true all sub-children will be retreived also.
+     * @return array
+    */
+    public function getChildren($recursive = false)
+    {
+        $children = Entity::getByMeta("parent", $this->guid, 0, 0, 'TaxonomyTerm');
+        if ($recursive)
+        {
+            foreach($children as $child)
+            {
+                $subChildren = $child->getChildren(true);
+                foreach($subChildren as $child)
+                {
+                    $children[] = $child;
+                }
+            }
+        }
+        return $children;
+    }
+    
+    /**
      * Gets a taxonomy term using a taxonomy and a taxonomy term id.
      * @param mixed $type Optional. The taxonomy. Either a string, an integer or a [Taxonomy] instance.
      * @param mixed $term Either a string or an integer identifying the taxonomy term.

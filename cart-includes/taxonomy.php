@@ -53,7 +53,7 @@ class Taxonomy extends Entity
         return null;
     }
 	
-	    /**
+    /**
      * Print a list of categories to the browser.
     */
     public static function display($args = array())
@@ -75,7 +75,7 @@ class Taxonomy extends Entity
             }
             if ($term->parent == $parent)
             {
-                echo '<li class="'.arr::get($args,'li_class').'"><a href="#">'.$term->name.'</a>';
+                echo '<li class="'.arr::get($args,'li_class').'"><a href="'.$term->getUrl().'">'.$term->name.'</a>';
                 self::_print($terms, $term->guid, $args);
                 echo '</li>';
             }

@@ -27,7 +27,7 @@ class Widget_Taxonomy extends Widget
 			$title = $taxonomy->name;
 		echo $beforeTitle . $title . $afterTitle;
 		
-		Taxonomy::display(array('taxonomy' => $taxonomy->guid));
+		Taxonomy::display('taxonomy='.$taxonomy->guid);
 		
 		echo $afterWidget;
 	}

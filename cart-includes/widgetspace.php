@@ -80,8 +80,8 @@ class WidgetSpace
             'name'          => 'Sidebar '.$i,
             'id'            => 'sidebar-'.$i,
             'description'   => '',
-            'beforeWidget'  => '<li id="%s" class="widget">',
-            'afterWidget'   => '</li>',
+            'beforeWidget'  => '<div id="%s" class="widget %s">',
+            'afterWidget'   => '</div>',
             'beforeTitle'   => '<h3 class="widget title">',
             'afterTitle'    => '</h3>'
         ));
@@ -146,16 +146,16 @@ class WidgetSpace
 			//  try and find a default
 		}
 		
-		$html = '<ul>';
+		$html = '<div class="'.$space->id.'">';
 		foreach($space->widgets as $index => $widgetClass)
 		{
 			$opts  = $space->widgetOpts[$index];
 			$obj = new $widgetClass();
 			$args = array(
-				'beforeTitle'	=> sprintf($space->beforeTitle, $space->id),
-				'afterTitle'	=> sprintf($space->afterTitle, $space->id),
-				'beforeWidget'	=> sprintf($space->beforeWidget, $space->id),
-				'afterWidget'	=> sprintf($space->afterWidget, $space->id)
+				'beforeTitle'	=> sprintf($space->beforeTitle, $space->id, $space->id),
+				'afterTitle'	=> sprintf($space->afterTitle, $space->id, $space->id),
+				'beforeWidget'	=> sprintf($space->beforeWidget, $space->id, $space->id),
+				'afterWidget'	=> sprintf($space->afterWidget, $space->id, $space->id)
 			);
 			foreach($opts as $name => $value)
 				$args[$name] = $value;
@@ -164,7 +164,7 @@ class WidgetSpace
 			$html .= ob_get_contents();
 			ob_end_clean();
 		}
-		$html .= '</ul>';
+		$html .= '</div>';
         return $html;
     }
 }
