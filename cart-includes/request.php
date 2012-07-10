@@ -40,6 +40,7 @@ class Request
         {
             if ($bit != "")
             {
+                $bit = rawurldecode($bit);
                 $this->rawPath .= '/'.$bit;
                 $this->path[] = $bit;
             }

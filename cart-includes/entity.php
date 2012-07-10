@@ -46,6 +46,24 @@ abstract class Entity extends Model
         $this->guid = 0;
 		$this->revisionId = 0;
     }
+    
+    /**
+     * Gets a single property. In the case of an array the first element is returned.
+     * @param string $propertyName
+     * @return mixed Property value on success, null on failure.
+    */
+    public function getProperty($propertyName)
+    {
+        if (isset($this->{$propertyName}))
+        {
+            if (is_array($this->{$propertyName}))
+            {
+                return $this->{$propertyName}[0];
+            }
+            return $this->{$propertyName};
+        }
+        return null;
+    }
 	
 	/**
 	 * Gets all revisions of the entity.
@@ -79,26 +97,24 @@ abstract class Entity extends Model
     */
     public function save($newRevision = true)
     {
-        //  todo: save non-autoloaded metadata also
-        //  todo: save without a new revision
-        //  todo: save a new entity (new GUID)
-        
         if ($this->entityType == null || $this->entityType == '')
             $this->entityType = get_class($this);
         if ($this->revisionStatus == null || $this->revisionStatus < 1)
             $this->revisionStatus = self::REVISIONSTATUS_ACTIVE;
         
+        $newEntity = false;
 		if ($this->guid == 0)
         {
-			$newGuid = DB::select('MAX(guid) as maxGuid')->from('entities')->execute()->get('maxGuid');
+			$newGuid = DB::select('MAX(guid) as maxGuid')->from(Core::$activeStore->tables->entity)->execute()->get('maxGuid');
 			$newGuid++;
 			$data = array(
 				'guid'	=> $newGuid
 			);
-			list($revisionId, $affectedRows) = DB::insert('entities',array_keys($data))->values($data)->execute();
+			list($revisionId, $affectedRows) = DB::insert(Core::$activeStore->tables->entity,array_keys($data))->values($data)->execute();
 			$this->guid = $newGuid;
 			$this->revisionId = $revisionId;
 			$newRevision = false;
+                        $newEntity = true;
         }
         
 		$data = array(
@@ -113,7 +129,7 @@ abstract class Entity extends Model
             $revisionId = -1;
             try
             {
-                list($revisionId, $affectedRows) = DB::insert('entities', array_keys($data))->values($data)->execute();
+                list($revisionId, $affectedRows) = DB::insert(Core::$activeStore->tables->entity, array_keys($data))->values($data)->execute();
             }
             catch(Exception $ex)
             {
@@ -126,17 +142,28 @@ abstract class Entity extends Model
             $this->revisionId = $revisionId;
             
             //  update old records to be inactive
-            DB::update('entities')->set(array('revisionStatus'=>self::REVISIONSTATUS_OUTDATED))
+            DB::update(Core::$activeStore->tables->entity)->set(array('revisionStatus'=>self::REVISIONSTATUS_OUTDATED))
                 ->where('guid','=',$this->guid)->and_where('revisionId','!=',$this->revisionId)
                 ->execute();
             
             //  store meta data
             $this->saveMeta(false, $oldRevisionId);
+            
+            Hooks::doAction("update_entity_".$this->entityType, $this);
         }
         else
         {
-            DB::update('entities')->set($data)->where('guid','=',$this->guid)->and_where('revisionId','=',$this->revisionId)->execute();
+            DB::update(Core::$activeStore->tables->entity)->set($data)->where('guid','=',$this->guid)->and_where('revisionId','=',$this->revisionId)->execute();
 			$this->saveMeta(true, $this->revisionId);
+            
+            if ($newEntity)
+            {
+                Hooks::doAction("new_entity_".$this->entityType, $this);
+            }
+            else
+            {
+                Hooks::doAction("review_entity_".$this->entityType, $this);
+            }
         }
     }
 	
@@ -147,12 +174,12 @@ abstract class Entity extends Model
 	*/
 	public function getMeta($metaKey = '')
 	{
-		$query = DB::select()->from('entities_meta')->where('entityGuid','=',$this->guid)->and_where('entityRevision','=',$this->revisionId)->and_where('autoload','=',0);
-		$query->join('entities_metakeys')->on('entities_meta.metaKey','=','entities_metakeys.metaKey');
+		$query = DB::select()->from(Core::$activeStore->tables->entityMeta)->where('entityGuid','=',$this->guid)->and_where('entityRevision','=',$this->revisionId)->and_where('autoload','=',0);
+		$query->join(Core::$activeStore->tables->entityMetaKeys)->on(Core::$activeStore->tables->entityMeta.'.metaKey','=',Core::$activeStore->tables->entityMetaKeys.'.metaKey');
 		$query->order_by('metaId', 'ASC');
 		if ($metaKey != '')
 		{
-			$query->where('entities_metakeys.metaKeyName','=',$metaKey);
+			$query->where(Core::$activeStore->tables->entityMetaKeys.'.metaKeyName','=',$metaKey);
 		}
 		$rows = $query->execute();
 
@@ -201,7 +228,7 @@ abstract class Entity extends Model
 		
 		$metaKeyId = self::getMetaKeyId($metaKey);
 		
-		DB::delete('entities_meta')->where('entityGuid','=',$this->guid)->and_where('entityRevision','=',$this->revisionId)
+		DB::delete(Core::$activeStore->tables->entityMeta)->where('entityGuid','=',$this->guid)->and_where('entityRevision','=',$this->revisionId)
 			->and_where('metaKey','=',$metaKeyId)->execute();
 		foreach($metaValue as $v)
 		{
@@ -212,7 +239,7 @@ abstract class Entity extends Model
 				'metaKey'       => $metaKeyId,
 				'metaValue'     => $v
 			);
-			DB::insert('entities_meta', array_keys($data))->values($data)->execute();
+			DB::insert(Core::$activeStore->tables->entityMeta, array_keys($data))->values($data)->execute();
 		}
 	}
 	
@@ -227,7 +254,7 @@ abstract class Entity extends Model
 		if ($overwrite)
 		{
 			//  delete the existing metadata
-			DB::delete('entities_meta')->where('entityGuid','=',$this->guid)->and_where('entityRevision','=',$this->revisionId)->execute();
+			DB::delete(Core::$activeStore->tables->entityMeta)->where('entityGuid','=',$this->guid)->and_where('entityRevision','=',$this->revisionId)->execute();
 		}
 		
 		//  save non-autoload meta data
@@ -245,7 +272,7 @@ abstract class Entity extends Model
 					'metaKey'       => $metaKeyId,
 					'metaValue'     => $v
 				);
-				DB::insert('entities_meta', array_keys($data))->values($data)->execute();
+				DB::insert(Core::$activeStore->tables->entityMeta, array_keys($data))->values($data)->execute();
 			}
 		}
 		
@@ -276,7 +303,7 @@ abstract class Entity extends Model
 							'metaKey'       => $metaKeyId,
 							'metaValue'     => $val
 						);
-						DB::insert('entities_meta', array_keys($data))->values($data)->execute();
+						DB::insert(Core::$activeStore->tables->entityMeta, array_keys($data))->values($data)->execute();
 					}
 				}
 				else
@@ -288,7 +315,7 @@ abstract class Entity extends Model
 						'metaKey'       => $metaKeyId,
 						'metaValue'     => $this->{$metaKey}
 					);
-					DB::insert('entities_meta', array_keys($data))->values($data)->execute();
+					DB::insert(Core::$activeStore->tables->entityMeta, array_keys($data))->values($data)->execute();
 				}
 			}
 		}
@@ -301,10 +328,10 @@ abstract class Entity extends Model
     */
     private static function getMetaKeyId($keyName)
     {
-        $rows = DB::select()->from('entities_metakeys')->where('metaKeyName','=',$keyName)->execute();
+        $rows = DB::select()->from(Core::$activeStore->tables->entityMetaKeys)->where('metaKeyName','=',$keyName)->execute();
         foreach($rows as $row)
             return $row['metaKey'];
-        list($insertId, $affectedRows) = DB::insert('entities_metakeys', array('metaKeyName'))->values(array('metaKeyName'=>$keyName))->execute();
+        list($insertId, $affectedRows) = DB::insert(Core::$activeStore->tables->entityMetaKeys, array('metaKeyName'))->values(array('metaKeyName'=>$keyName))->execute();
         return $insertId;
     }
     
@@ -338,21 +365,9 @@ abstract class Entity extends Model
 		return self::getByMeta(null, null, $count, $offset, $type, $revisionStatus, $skipCache, $storeInCache);
     }
     
-    /**
-     * Loads entities from the database using the given metadata.
-     * @param mixed $metaKey Metadata key used for matching. Can also be supplied as an array.
-     * @param mixed $metaValue Metadata value used for matching. Can also be supplied as an array.
-     * @param int $count Maximum number of entities to return.
-     * @param int $offset Offset to start entity listing at.
-     * @param mixed $type Entity type restrictions. String restricts to a single type an array will restrict to multiple types.
-     * @param bool $skipCache When set to true any cached instances of the entity requested will be ignore. Defaults to false.
-     * @param bool $storeInCache When set to true a copy of the entity will be saved for later retreival in the cache. Defaults to true.
-     * @return array
-    */
-    public static function getByMeta($metaKey = null, $metaValue = null, $count = 20, $offset = 0, $type = null, $revisionStatus = self::REVISIONSTATUS_ACTIVE, $skipCache = false, $storeInCache = true)
+    private static function _buildMetaQuery($query, $metaKey = null, $metaValue = null, $type = null, $revisionStatus = self::REVISIONSTATUS_ACTIVE)
     {
-        $query = DB::select('e.guid','e.authorGuid','e.authoredDateTime','e.entityType','e.revisionId','e.revisionStatus')
-            ->from(array("entities","e"))->where('revisionStatus','=',$revisionStatus);
+        $query->from(array(Core::$activeStore->tables->entity,"e"))->where('revisionStatus','=',$revisionStatus);
 		
         if (!is_array($metaKey) && $metaKey != null)
 	    $metaKey = array($metaKey);
@@ -395,6 +410,42 @@ abstract class Entity extends Model
             if ($doneGuidMatch)
                 $query->and_where_open();
                 
+            //  metaKeys that are identical should be an OR not AND
+            $keys = array();
+            foreach($metaKey as $i => $key)
+            {
+                if (!array_key_exists($key, $keys))
+                    $keys[$key] = array();
+                $keys[$key][] = $metaValue[$i];
+            }
+            
+            $i = 0;
+            foreach($keys as $key => $values)
+            {
+                $query->join(array(Core::$activeStore->tables->entityMeta, 'm_'.$i))->on('guid','=','m_'.$i.'.entityGuid')->on('revisionId','=','m_'.$i.'.entityRevision');
+                $query->join(array(Core::$activeStore->tables->entityMetaKeys, 'mk_'.$i))->on('m_'.$i.'.metaKey','=','mk_'.$i.'.metaKey');
+                $query->where('mk_'.$i.'.metaKeyName','=',$key);
+                $query->and_where_open();
+                $j = 0;
+                foreach($values as $value)
+                {
+                    if ($j == 0)
+                        $query->where('m_'.$i.'.metaValue','=',$value);
+                    else
+                        $query->or_where('m_'.$i.'.metaValue','=',$value);
+                    $j++;
+                }
+                $query->and_where_close();
+                /*
+                if ($i == 0)
+                    $query->where('mk_'.$i.'.metaKeyName','=',$key);
+                else
+                    $query->and_where('mk_'.$i.'.metaKeyName','=',$key);
+                */
+                $i++;
+            }
+            
+            /*
             $i = 0;
             foreach($metaKey as $key)
             {
@@ -413,15 +464,11 @@ abstract class Entity extends Model
                 $query->and_where('m_'.$i.'.metaValue','=',$val);
                 $i++;
             }
-            
+            */
             if ($doneGuidMatch)
                 $query->and_where_close();
         }
-		
-        if ($count > 0)
-            $query->limit($count);
-        if ($offset > 0)
-            $query->offset($offset);
+	
         if ($type != null)
         {
             if (is_array($type) && sizeof($type) > 0)
@@ -446,13 +493,53 @@ abstract class Entity extends Model
                 $query->and_where('e.entityType','=',$type);
             }
         }
+        
+        return $query;
+    }
+    
+    /**
+     * Counts entities from the database using the given metadata.
+     * @param mixed $metaKey Metadata key used for matching. Can also be supplied as an array.
+     * @param mixed $metaValue Metadata value used for matching. Can also be supplied as an array.
+     * @param mixed $type Entity type restrictions. String restricts to a single type an array will restrict to multiple types.
+     * @return int
+    */
+    public static function getCountByMeta($metaKey = null, $metaValue = null, $type = null, $revisionStatus = self::REVISIONSTATUS_ACTIVE)
+    {
+        $query = DB::select('COUNT(DISTINCT revisionId) AS mycount');
+        $query = self::_buildMetaQuery($query, $metaKey, $metaValue, $type, $revisionStatus);
+        $result = $query->execute();
+        return $result->get('mycount');
+    }
+    
+    /**
+     * Loads entities from the database using the given metadata.
+     * @param mixed $metaKey Metadata key used for matching. Can also be supplied as an array.
+     * @param mixed $metaValue Metadata value used for matching. Can also be supplied as an array.
+     * @param int $count Maximum number of entities to return.
+     * @param int $offset Offset to start entity listing at.
+     * @param mixed $type Entity type restrictions. String restricts to a single type an array will restrict to multiple types.
+     * @param bool $skipCache When set to true any cached instances of the entity requested will be ignore. Defaults to false.
+     * @param bool $storeInCache When set to true a copy of the entity will be saved for later retreival in the cache. Defaults to true.
+     * @return array
+    */
+    public static function getByMeta($metaKey = null, $metaValue = null, $count = 20, $offset = 0, $type = null, $revisionStatus = self::REVISIONSTATUS_ACTIVE, $skipCache = false, $storeInCache = true)
+    {
+        $query = DB::select('e.guid','e.authorGuid','e.authoredDateTime','e.entityType','e.revisionId','e.revisionStatus');
+        $query = self::_buildMetaQuery($query, $metaKey, $metaValue, $type, $revisionStatus);
+        if ($count > 0)
+            $query->limit($count);
+        if ($offset > 0)
+            $query->offset($offset);
+        $query->group_by('e.revisionId');
+        
         $rows = $query->execute();
 
         $ret = array();
         $keys = array();
         $i = 0;
-        $query = DB::select('mk.metaKeyName','m.metaValue', 'm.entityGuid', 'm.entityRevision')->from(array("entities_meta","m"))->
-            join(array('entities_metakeys', 'mk'))->on('m.metaKey','=','mk.metaKey')->
+        $query = DB::select('mk.metaKeyName','m.metaValue', 'm.entityGuid', 'm.entityRevision')->from(array(Core::$activeStore->tables->entityMeta,"m"))->
+            join(array(Core::$activeStore->tables->entityMetaKeys, 'mk'))->on('m.metaKey','=','mk.metaKey')->
             where('autoload','=',1)->and_where_open();
         foreach($rows as $row)
         {
@@ -491,6 +578,12 @@ abstract class Entity extends Model
                     $obj->{$row['metaKeyName']} = $row['metaValue'];
             }
         }
+        
+        foreach($ret as $obj)
+        {
+            Hooks::doAction("load_entity_".$obj->entityType, $obj);
+        }
+        
         return $ret;
     }
 }

@@ -23,16 +23,27 @@ class Store extends Entity
     public $timezone;
     
     /**
+     * @var Tables Table information for the store.
+    */
+    public $tables;
+    
+    /**
      * Gets the active store.
      * @return Store The active store.
     */
     public static function getActive()
     {
+        $tables = new Tables();
+        $tables->entity = CC_DB_PREFIX.'entities';
+        $tables->entityMeta = CC_DB_PREFIX.'entities_meta';
+        $tables->entityMetaKeys = CC_DB_PREFIX.'entities_metakeys';
+        
         $store = new Store();
         $store->name = "Fubar Store";
         $store->hostname = $_SERVER['HTTP_HOST'];
         $store->baseUri = '/whatevercart/index.php/';
         $store->timezone = 'America/Chicago';
+        $store->tables = $tables;
         return $store;
     }
 }
