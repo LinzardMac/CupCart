@@ -80,11 +80,23 @@ class Core
         self::loadPlugins();
         
         //  load taxanomy types
-        TaxonomyType::loadAll();
-        
+        Taxonomy::loadAll();
+		
         //  activate the current theme
         self::$activeTheme = Theme::getActive();
         Theme::bootstrap(self::$activeTheme);
+		
+		//  load widgets
+		Widget::register("Widget_Cart");
+		Widget::register("Widget_Taxonomy");
+		Hooks::doAction("register_widgets");
+		
+		//  add widgets to widgetspaces based on settings
+		$spaces = WidgetSpace::getAll();
+		foreach($spaces as $space)
+		{
+			$space->add('Widget_Taxonomy', array('taxonomy' => Category::getTaxonomy()->guid));
+		}
     }
     
     /**
@@ -92,7 +104,7 @@ class Core
     */
     private static function loadMuPlugins()
     {
-        self::$muPlugins = Plugin::getList(MUPLUGINS_DIR);
+        self::$muPlugins = Plugin::getList(CC_MUPLUGINS_DIR);
         foreach(self::$muPlugins as $plugin)
             $plugin->load();
         Hooks::doAction("muplugins_loaded");
@@ -182,7 +194,7 @@ class Core
     public static function requestIsForCheckout()
     {
         $request = self::parseUrl();
-        if (strtolower($request->rawPath) == '/checkout')
+        if (sizeof($request->path) > 0 && strtolower($request->path[0]) == 'checkout')
             return true;
         return false;
     }
@@ -190,7 +202,7 @@ class Core
     public static function requestIsForCart()
     {
         $request = self::parseUrl();
-        if (strtolower($request->rawPath) == '/viewcart')
+        if (sizeof($request->path) > 0 && strtolower($request->path[0]) == 'cart')
             return true;
         return false;
     }

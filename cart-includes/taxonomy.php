@@ -1,57 +1,96 @@
 <?php
 
 /**
- * A taxonomy.
+ * Taxonomy type API.
 */
 class Taxonomy extends Entity
 {
     /**
-     * @var int [TaxonomyType] GUID.
+     * @var array Loaded taxonomy types.
     */
-    public $typeGuid;
+    private static $types = array();
     
     /**
-     * @var string Name of the taxanomy item.
+     * @var string Name of the taxonomy.
     */
     public $name;
     
     /**
-     * Gets a taxonomy using a taxonomy type and a taxonomy id.
-     * @param mixed $type Optional. The taxonomy type. Either a string, an integer or a [TaxonomyType] instance.
-     * @param mixed $taxonomy Either a string or an integer identifying the taxonomy.
-     * @return Taxonomy A taxonomy if found, null otherwise.
+     * Loads all taxonomies into memory.
     */
-    public static function get($taxonomy, $type = null)
+    public static function loadAll()
     {
-        $taxType = $type;
-        if ($taxType != null)
+        self::$types = Entity::getByType(0, 0, 'Taxonomy');
+    }
+    
+    /**
+     * Gets a taxonomy by name (must have been loaded first).
+     * @param string $name Taxonomy type name.
+     * @return TaxonomyType Taxonomy type found, null otherwise.
+    */
+    public static function getFromCacheByName($name)
+    {
+        foreach(self::$types as $type)
         {
-            if (!($taxType instanceof TaxonomyType))
+            if (strtolower($type->name) == strtolower($name))
+                return $type;
+        }
+        return null;
+    }
+    
+    /**
+     * Gets a taxonomy by guid (must have been loaded first).
+     * @param int $guid Taxonomy type GUID.
+     * @return TaxonomyType Taxonomy type found, null otherwise.
+    */
+    public static function getFromCacheByGuid($guid)
+    {
+        foreach(self::$types as $type)
+        {
+            if ($type->guid == $guid)
+                return $type;
+        }
+        return null;
+    }
+	
+    /**
+     * Print a list of categories to the browser.
+    */
+    public static function display($args = array())
+    {
+        $args = Utils::getArgs($args);
+        $terms = self::get($args);
+        self::_print($terms, 0, $args);
+    }
+    
+    private static function _print($terms, $parent, $args)
+    {
+        $first = true;
+        foreach($terms as $term)
+        {
+            if ($first)
             {
-                if (is_numeric($taxType))
-                    $taxType = TaxonomyType::getFromCacheByGuid($taxType);
-                else
-                    $taxType = TaxonomyType::getFromCacheByName($taxType);
+                echo '<ul class="'.arr::get($args,'ul_class').'">';
+                $first = false;
             }
-            if ($taxType == null)
-                return null;
-            
-            if (is_numeric($taxonomy))
-                $entities = Entity::getByMeta(array("typeGuid", "guid"), array($taxType->guid, $taxonomy), 1, 0, 'Taxonomy');
-            else
-                $entities = Entity::getByMeta(array("typeGuid", "name"), array($taxType->guid, $taxonomy), 1, 0, 'Taxonomy');
+            if ($term->parent == $parent)
+            {
+                echo '<li class="'.arr::get($args,'li_class').'"><a href="'.$term->getUrl().'">'.$term->name.'</a>';
+                self::_print($terms, $term->guid, $args);
+                echo '</li>';
+            }
         }
-        else
-        {
-            if (is_numeric($taxonomy))
-                $entities = Entity::getByMeta("guid", $taxonomy, 1, 0, 'Taxonomy');
-            else
-                $entities = Entity::getByMeta("name", $taxonomy, 1, 0, 'Taxonomy');
-        }
-        
-        if (sizeof($entities) < 0)
-            return null;
-        else
-            return array_shift($entities);
+        if (!$first)
+            echo '</ul>';
+    }
+    
+    /**
+     * Gets an array of categories.
+     * @return array
+    */
+    public static function get($args = array())
+    {
+        $args = Utils::getArgs($args);
+        return Entity::getByMeta("taxonomyGuid", arr::get($args,'taxonomy',0), 0, 0, 'TaxonomyTerm');
     }
 }

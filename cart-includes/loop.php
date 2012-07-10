@@ -28,6 +28,26 @@ class Loop
     }
     
     /**
+     * Gets the current loop position pointer.
+     * @return int
+    */
+    public function loopPosition()
+    {
+        if ($this->loopIndex - 1 < 0)
+            return 0;
+        return $this->loopIndex - 1;
+    }
+    
+    /**
+     * Gets the number of entities in the loop.
+     * @return int
+    */
+    public function entityCount()
+    {
+        return sizeof($this->entities);
+    }
+    
+    /**
      * Gets if the loop has entities and can continue to iterate over entities.
      * @return bool True if entities are loopable, false otherwise.
     */
@@ -63,7 +83,22 @@ class Loop
         if ($this->entity != null)
         {
             $store = Core::$activeStore;
-            return Hooks::applyFilter('the_url', 'http://'.$store->hostname.$store->baseUri.'products/'.$this->theGuid().'/'.urlencode($this->theTitle()).'.html');
+            return Hooks::applyFilter('the_url',$store->baseUri.'store/'
+                . get_class($this->entity) . '/category stuff here/'.rawurlencode($this->theTitle()).'-'.$this->entity->guid);
+        }
+        return '';
+    }
+    
+    /**
+     * Gets the URL used to add an entity to the shopping cart.
+     * @return string The entity's URL.
+    */
+    public function theAddToCartUrl()
+    {
+        if ($this->entity != null)
+        {
+            $store = Core::$activeStore;
+            return Hooks::applyFilter('the_addtocart_url',$store->baseUri.'cart/add/'.$this->entity->guid);
         }
         return '';
     }

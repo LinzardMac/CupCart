@@ -81,12 +81,12 @@ abstract class Database {
 			new Database_PDO($name, array(
 				'type'       => 'pdo',
 				'connection' => array(
-					'dsn'		=> DB_DSN,
-					'username'	=> DB_USER,
-					'password'	=> DB_PASS,
-					'persistent'	=> DB_PERSISTENT
+					'dsn'		=> CC_DB_DSN,
+					'username'	=> CC_DB_USER,
+					'password'	=> CC_DB_PASS,
+					'persistent'	=> CC_DB_PERSISTENT
 				),
-				'table_prefix' => DB_PREFIX,
+				'table_prefix' => '',
 				'charset'      => 'utf8',
 				'profiling'    => false
 			));
