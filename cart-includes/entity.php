@@ -104,12 +104,12 @@ abstract class Entity extends Model
         
 		if ($this->guid == 0)
         {
-			$newGuid = DB::select('MAX(guid) as maxGuid')->from('entities')->execute()->get('maxGuid');
+			$newGuid = DB::select('MAX(guid) as maxGuid')->from(Core::$activeStore->tables->entity)->execute()->get('maxGuid');
 			$newGuid++;
 			$data = array(
 				'guid'	=> $newGuid
 			);
-			list($revisionId, $affectedRows) = DB::insert('entities',array_keys($data))->values($data)->execute();
+			list($revisionId, $affectedRows) = DB::insert(Core::$activeStore->tables->entity,array_keys($data))->values($data)->execute();
 			$this->guid = $newGuid;
 			$this->revisionId = $revisionId;
 			$newRevision = false;
@@ -127,7 +127,7 @@ abstract class Entity extends Model
             $revisionId = -1;
             try
             {
-                list($revisionId, $affectedRows) = DB::insert('entities', array_keys($data))->values($data)->execute();
+                list($revisionId, $affectedRows) = DB::insert(Core::$activeStore->tables->entity, array_keys($data))->values($data)->execute();
             }
             catch(Exception $ex)
             {
@@ -140,7 +140,7 @@ abstract class Entity extends Model
             $this->revisionId = $revisionId;
             
             //  update old records to be inactive
-            DB::update('entities')->set(array('revisionStatus'=>self::REVISIONSTATUS_OUTDATED))
+            DB::update(Core::$activeStore->tables->entity)->set(array('revisionStatus'=>self::REVISIONSTATUS_OUTDATED))
                 ->where('guid','=',$this->guid)->and_where('revisionId','!=',$this->revisionId)
                 ->execute();
             
@@ -149,7 +149,7 @@ abstract class Entity extends Model
         }
         else
         {
-            DB::update('entities')->set($data)->where('guid','=',$this->guid)->and_where('revisionId','=',$this->revisionId)->execute();
+            DB::update(Core::$activeStore->tables->entity)->set($data)->where('guid','=',$this->guid)->and_where('revisionId','=',$this->revisionId)->execute();
 			$this->saveMeta(true, $this->revisionId);
         }
     }
@@ -161,12 +161,12 @@ abstract class Entity extends Model
 	*/
 	public function getMeta($metaKey = '')
 	{
-		$query = DB::select()->from('entities_meta')->where('entityGuid','=',$this->guid)->and_where('entityRevision','=',$this->revisionId)->and_where('autoload','=',0);
-		$query->join('entities_metakeys')->on('entities_meta.metaKey','=','entities_metakeys.metaKey');
+		$query = DB::select()->from(Core::$activeStore->tables->entityMeta)->where('entityGuid','=',$this->guid)->and_where('entityRevision','=',$this->revisionId)->and_where('autoload','=',0);
+		$query->join(Core::$activeStore->tables->entityMetaKeys)->on(Core::$activeStore->tables->entityMeta.'.metaKey','=',Core::$activeStore->tables->entityMetaKeys.'.metaKey');
 		$query->order_by('metaId', 'ASC');
 		if ($metaKey != '')
 		{
-			$query->where('entities_metakeys.metaKeyName','=',$metaKey);
+			$query->where(Core::$activeStore->tables->entityMetaKeys.'.metaKeyName','=',$metaKey);
 		}
 		$rows = $query->execute();
 
@@ -215,7 +215,7 @@ abstract class Entity extends Model
 		
 		$metaKeyId = self::getMetaKeyId($metaKey);
 		
-		DB::delete('entities_meta')->where('entityGuid','=',$this->guid)->and_where('entityRevision','=',$this->revisionId)
+		DB::delete(Core::$activeStore->tables->entityMeta)->where('entityGuid','=',$this->guid)->and_where('entityRevision','=',$this->revisionId)
 			->and_where('metaKey','=',$metaKeyId)->execute();
 		foreach($metaValue as $v)
 		{
@@ -226,7 +226,7 @@ abstract class Entity extends Model
 				'metaKey'       => $metaKeyId,
 				'metaValue'     => $v
 			);
-			DB::insert('entities_meta', array_keys($data))->values($data)->execute();
+			DB::insert(Core::$activeStore->tables->entityMeta, array_keys($data))->values($data)->execute();
 		}
 	}
 	
@@ -241,7 +241,7 @@ abstract class Entity extends Model
 		if ($overwrite)
 		{
 			//  delete the existing metadata
-			DB::delete('entities_meta')->where('entityGuid','=',$this->guid)->and_where('entityRevision','=',$this->revisionId)->execute();
+			DB::delete(Core::$activeStore->tables->entityMeta)->where('entityGuid','=',$this->guid)->and_where('entityRevision','=',$this->revisionId)->execute();
 		}
 		
 		//  save non-autoload meta data
@@ -259,7 +259,7 @@ abstract class Entity extends Model
 					'metaKey'       => $metaKeyId,
 					'metaValue'     => $v
 				);
-				DB::insert('entities_meta', array_keys($data))->values($data)->execute();
+				DB::insert(Core::$activeStore->tables->entityMeta, array_keys($data))->values($data)->execute();
 			}
 		}
 		
@@ -290,7 +290,7 @@ abstract class Entity extends Model
 							'metaKey'       => $metaKeyId,
 							'metaValue'     => $val
 						);
-						DB::insert('entities_meta', array_keys($data))->values($data)->execute();
+						DB::insert(Core::$activeStore->tables->entityMeta, array_keys($data))->values($data)->execute();
 					}
 				}
 				else
@@ -302,7 +302,7 @@ abstract class Entity extends Model
 						'metaKey'       => $metaKeyId,
 						'metaValue'     => $this->{$metaKey}
 					);
-					DB::insert('entities_meta', array_keys($data))->values($data)->execute();
+					DB::insert(Core::$activeStore->tables->entityMeta, array_keys($data))->values($data)->execute();
 				}
 			}
 		}
@@ -315,10 +315,10 @@ abstract class Entity extends Model
     */
     private static function getMetaKeyId($keyName)
     {
-        $rows = DB::select()->from('entities_metakeys')->where('metaKeyName','=',$keyName)->execute();
+        $rows = DB::select()->from(Core::$activeStore->tables->entityMetaKeys)->where('metaKeyName','=',$keyName)->execute();
         foreach($rows as $row)
             return $row['metaKey'];
-        list($insertId, $affectedRows) = DB::insert('entities_metakeys', array('metaKeyName'))->values(array('metaKeyName'=>$keyName))->execute();
+        list($insertId, $affectedRows) = DB::insert(Core::$activeStore->tables->entityMetaKeys, array('metaKeyName'))->values(array('metaKeyName'=>$keyName))->execute();
         return $insertId;
     }
     
@@ -354,7 +354,7 @@ abstract class Entity extends Model
     
     private static function _buildMetaQuery($query, $metaKey = null, $metaValue = null, $type = null, $revisionStatus = self::REVISIONSTATUS_ACTIVE)
     {
-        $query->from(array("entities","e"))->where('revisionStatus','=',$revisionStatus);
+        $query->from(array(Core::$activeStore->tables->entity,"e"))->where('revisionStatus','=',$revisionStatus);
 		
         if (!is_array($metaKey) && $metaKey != null)
 	    $metaKey = array($metaKey);
@@ -409,8 +409,8 @@ abstract class Entity extends Model
             $i = 0;
             foreach($keys as $key => $values)
             {
-                $query->join(array('entities_meta', 'm_'.$i))->on('guid','=','m_'.$i.'.entityGuid')->on('revisionId','=','m_'.$i.'.entityRevision');
-                $query->join(array('entities_metakeys', 'mk_'.$i))->on('m_'.$i.'.metaKey','=','mk_'.$i.'.metaKey');
+                $query->join(array(Core::$activeStore->tables->entityMeta, 'm_'.$i))->on('guid','=','m_'.$i.'.entityGuid')->on('revisionId','=','m_'.$i.'.entityRevision');
+                $query->join(array(Core::$activeStore->tables->entityMetaKeys, 'mk_'.$i))->on('m_'.$i.'.metaKey','=','mk_'.$i.'.metaKey');
                 $query->where('mk_'.$i.'.metaKeyName','=',$key);
                 $query->and_where_open();
                 $j = 0;
@@ -525,8 +525,8 @@ abstract class Entity extends Model
         $ret = array();
         $keys = array();
         $i = 0;
-        $query = DB::select('mk.metaKeyName','m.metaValue', 'm.entityGuid', 'm.entityRevision')->from(array("entities_meta","m"))->
-            join(array('entities_metakeys', 'mk'))->on('m.metaKey','=','mk.metaKey')->
+        $query = DB::select('mk.metaKeyName','m.metaValue', 'm.entityGuid', 'm.entityRevision')->from(array(Core::$activeStore->tables->entityMeta,"m"))->
+            join(array(Core::$activeStore->tables->entityMetaKeys, 'mk'))->on('m.metaKey','=','mk.metaKey')->
             where('autoload','=',1)->and_where_open();
         foreach($rows as $row)
         {

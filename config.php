@@ -11,6 +11,6 @@ define("CC_INDEX_FILE", "index.php");
 define("CC_DB_USER", "cupcart");
 define("CC_DB_PASS", "cupcart");
 define("CC_DB_NAME", "cupcart");
-define("CC_DB_DSN", "mysql:dbname=".CC_DB_DATABASE.";host=localhost");
+define("CC_DB_DSN", "mysql:dbname=".CC_DB_NAME.";host=localhost");
 define("CC_DB_PREFIX", "cup_");
 define("CC_DB_PERSISTENT", false);
