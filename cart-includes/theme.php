@@ -29,7 +29,7 @@ class Theme
     public static function getAll()
     {
         $ret = array();
-        $dirs = File::getDirectories(THEMES_DIR);
+        $dirs = File::getDirectories(CC_THEMES_DIR);
         foreach($dirs as $dir)
         {
             $shortName = basename($dir);
@@ -105,8 +105,8 @@ class Theme
     public static function getByShortName($themeShortName)
     {
         $theme = new Theme();
-        $theme->localUri = THEMES_DIR.$themeShortName.DIRECTORY_SEPARATOR;
-        $theme->httpUri = THEMES_URI.$themeShortName.'/';
+        $theme->localUri = CC_THEMES_DIR.$themeShortName.DIRECTORY_SEPARATOR;
+        $theme->httpUri = CC_THEMES_URI.$themeShortName.'/';
         
         if (file_exists($theme->localUri.'style.css'))
         {

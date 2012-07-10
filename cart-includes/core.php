@@ -104,7 +104,7 @@ class Core
     */
     private static function loadMuPlugins()
     {
-        self::$muPlugins = Plugin::getList(MUPLUGINS_DIR);
+        self::$muPlugins = Plugin::getList(CC_MUPLUGINS_DIR);
         foreach(self::$muPlugins as $plugin)
             $plugin->load();
         Hooks::doAction("muplugins_loaded");
