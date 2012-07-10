@@ -1,0 +1,313 @@
+<html> 
+<head> 
+<!--<meta charset="utf-8">-->
+    <title>My Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <link href="bootstrap/css/bootstrap.css" rel="stylesheet">
+    <link href="bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
+    <link href="bootstrap/css/bootstrap.css" rel="stylesheet">
+  <!--  <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">-->
+<link rel="stylesheet" type="text/css" href="style.css" />
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script type="text/javascript" src="bootstrap/js/bootstrap.js" ></script> 
+  <!-- <script src="bootstrap/js/bootstrap.min.js" type="javascript"></script> -->
+<script type="text/javascript">
+
+    $(".alert").alert()
+    </script>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+      google.load("visualization", "1", {packages:["corechart"]});
+      google.setOnLoadCallback(drawChart);
+      function drawChart() {
+        var data = google.visualization.arrayToDataTable([
+          ['Task', 'Hours per Day'],
+          ['Work',     11],
+          ['Eat',      2],
+          ['Commute',  2],
+          ['Watch TV', 2],
+          ['Sleep',    7]
+        ]);
+
+        var options = {
+          title: 'My Daily Activities'
+        };
+
+        var chart = new google.visualization.PieChart(document.getElementById('chart_div'));
+        chart.draw(data, options);
+      }
+    </script>
+
+</head> 
+
+<body> 
+
+<div id="wrapper"> 
+<div id="header">
+YOUR LOGO HERE 
+<div class="alert fade in">
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+            Oh dear. It seems that you've gone and blown something up! 
+          </div>
+</div> 
+<div id="sidebar"> 
+<div>
+<h2> Heading</h2> 
+<ul>
+<li>Item 1 </li>
+<li>Item 2</li>
+</ul>
+</div>
+<div>
+<h2> Heading</h2> 
+<ul>
+<li>Item 1 </li>
+<li>Item 2</li>
+</ul>
+</div>
+<div>
+<h2> Heading</h2> 
+<ul>
+<li>Item 1 </li>
+<li>Item 2</li>
+</ul>
+</div>
+<div>
+<h2> Heading</h2> 
+<ul>
+<li>Item 1 </li>
+<li>Item 2</li>
+</ul> 
+</div>
+
+</div> 
+<div id="main"> 
+<ul class="nav nav-tabs">
+    <li><a href="#dashboard" data-toggle="tab">Dashboard</a></li>
+    <li><a href="#stats" data-toggle="tab">Stats</a></li>
+    <li><a href="#settings" data-toggle="tab">Settings</a></li>
+    <li><a href="#plugins" data-toggle="tab">Plugins</a></li>
+    <li><a href="#themes" data-toggle="tab">Themes</a></li>
+
+    </ul>
+<div id="main-content" class="tab-content"> 
+<div class="tab-pane active" id="dashboard">
+<h1> Welcome To Your Dashboard!</h2>
+<p>This is your awesome new dashboard. Check it out and have fun</p> 
+<div id="quick-links"> 
+<a href="#"><img src="img/cupcart.png"/></a>
+<a href="#"><img src="img/cupcart.png"/></a>
+<a href="#"><img src="img/cupcart.png"/></a>
+<a href="#"><img src="img/cupcart.png"/></a>
+<a href="#"><img src="img/cupcart.png"/></a>
+<a href="#"><img src="img/cupcart.png"/></a>
+<a href="#"><img src="img/cupcart.png"/></a>
+<a href="#"><img src="img/cupcart.png"/></a>
+<a href="#"><img src="img/cupcart.png"/></a>
+<a href="#"><img src="img/cupcart.png"/></a>
+<a href="#"><img src="img/cupcart.png"/></a>
+<a href="#"><img src="img/cupcart.png"/></a>
+</div> 
+<div class="AdminBlock">
+<h1>RECENT ORDERS</h1>
+<table class="table table-striped">
+<thead>
+<tr>
+<th>Order</th>
+<th>Name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>#1254</td>
+<td>John SMith</td>
+</tr>
+<tr>
+<td>#1254</td>
+<td>John SMith</td>
+</tr>
+<tr>
+<td>#1254</td>
+<td>John SMith</td>
+</tr>
+</tbody>    </table>
+</div>
+<div class="AdminBlock" id="inventoryadmin">
+<h1> INVENTORY ALERT</h1>
+<table class="table table-striped">
+<thead>
+<tr>
+<th>QTY</th>
+<th>Product</th>
+<th>Attribute</th>
+<th>Sku</th>
+
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>15</td>
+<td>T-shirt</td>
+<td>Medium, Blue</td>
+<td>TBM001</td>
+</tr>
+<tr>
+<td>15</td>
+<td>T-shirt</td>
+<td>Medium, Blue</td>
+<td>TBM001</td>
+</tr>
+<tr>
+<td>15</td>
+<td>T-shirt</td>
+<td>Medium, Blue</td>
+<td>TBM001</td>
+</tr>
+<tr>
+<td>15</td>
+<td>T-shirt</td>
+<td>Medium, Blue</td>
+<td>TBM001</td>
+</tr>
+
+</tbody>    </table>
+
+</div>
+<div class="AdminBlock" id="csadmin">
+<h1>CUSTOMER SERVICE</h1>
+<table class="table table-striped">
+<thead>
+<tr>
+<th>Response</th>
+<th>QTY</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Unread Contacts</td>
+<td>2</td>
+</tr>
+<tr>
+<td>Pending Response</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Requires Action</td>
+<td>5</td>
+</tr>
+</tbody>    </table>
+</div>
+</div><!-- admin block -->
+<div class="tab-pane" id="stats">
+<div id="chart_div" style=""></div>
+
+</div>
+<div class="tab-pane" id="settings">
+<form class="form-horizontal">
+    <fieldset>
+    <legend>Store Settings</legend>
+  
+  <form class="form-horizontal">
+        <fieldset>
+          <div class="control-group">
+            <ledgend>General</ledgend>
+            <div class="control-group">
+            <label class="control-label" for="storename">Store Name</label>  <input class="" type="text" placeholder="name">
+            </div>
+               <div class="control-group">
+            <label class="control-label" for="storename">Street Address</label>  <input class="" type="text" placeholder="street">
+              </div>
+               <div class="control-group">
+            <label class="control-label" for="storename">City</label>  <input class="" type="text" placeholder="city">
+              </div>
+               <div class="control-group">
+            <label class="control-label" for="storename">State</label>  <input class="" type="text" placeholder="state">
+              </div>
+               <div class="control-group">
+            <label class="control-label" for="storename">Zip</label>  <input class="" type="text" placeholder="zip">
+  </div>
+      <div class="control-group">
+            <label class="control-label" for="phone">Phone</label>  <input class="" type="text" placeholder="phone">
+  </div>
+      <div class="control-group control-group error">
+            <label class="control-label" for="email">e-mail</label>  <input class="" type="text" placeholder="email">
+<p class="help-block"><strong>Look:</strong> An error class for you! There's more where those came from!</p>
+  </div></fieldset>
+  <fieldset>
+                   <ledgend>Site Display Options</ledgend>
+               <div class="control-group">
+
+              <label class="control-label" for="homepage">Home Page</label> 
+               <select class="span3">
+                <option>Products</option>
+                <option>Home</option>
+                <option>About</option>
+                <option>Contact</option>
+                <option>Specials</option>
+              </select></div><div class="control-group">
+              <label class="control-label" for="defaultorder">Default Product Order</label> 
+              <select class="span2">
+                <option>Price ASC</option>
+                <option>Price DSC</option>
+                <option>Alpha ASC</option>
+                <option>Alpha DSC</option>
+              </select>
+           </div>
+           </fieldset><fieldset>
+       
+          <div class="control-group">
+            <label class="control-label" for="radio">Display Add To Cart Button</label>
+            <div class="controls">
+             <label class="radio">
+                <input type="radio" name="optionsRadios" id="optionsRadios1" value="option1" checked>Yes</label>
+              <label class="radio">
+                <input type="radio" name="optionsRadios" id="optionsRadios2" value="option2">No </label>
+            </div>
+          </div>
+          <div class="control-group">
+            <label class="control-label" for="optionsCheckboxList">Checkboxes Just for good measure</label>
+            <div class="controls">
+              <label class="checkbox">
+                <input type="checkbox" name="optionsCheckboxList1" value="option1">
+              hey - it's a checkbox. Look at that!
+              </label>
+              <label class="checkbox">
+                <input type="checkbox" name="optionsCheckboxList2" value="option2">
+				Looky here. ANOTHER!               </label>
+              <label class="checkbox">
+                <input type="checkbox" name="optionsCheckboxList3" value="option3">
+                And one more because I can. 
+              </label>
+              <p class="help-block"><strong>Note:</strong> Labels surround all the options for much larger click areas and a more usable form.</p>
+            </div>
+          </div>
+          <div class="control-group">
+          <div class="control-group">
+<label class="control-label" for="fileInput">Logo</label>
+<div class="controls">
+<input id="fileInput" class="input-file" type="file">
+</div>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Save changes</button>
+            <button class="btn">Cancel</button>
+          </div>
+        </fieldset>
+      </form>
+ 
+    </fieldset>
+    </form>
+</div><!-- close settings -->
+<div class="tab-pane" id="plugins">...</div>
+<div class="tab-pane" id="themes">...</div>
+
+</div>
+</div><!-- close main-wrapper --> 
+<div class="clear"></div> 
+</div> 
+</body> 
+</html> 
