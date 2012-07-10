@@ -102,6 +102,7 @@ abstract class Entity extends Model
         if ($this->revisionStatus == null || $this->revisionStatus < 1)
             $this->revisionStatus = self::REVISIONSTATUS_ACTIVE;
         
+        $newEntity = false;
 		if ($this->guid == 0)
         {
 			$newGuid = DB::select('MAX(guid) as maxGuid')->from(Core::$activeStore->tables->entity)->execute()->get('maxGuid');
@@ -113,6 +114,7 @@ abstract class Entity extends Model
 			$this->guid = $newGuid;
 			$this->revisionId = $revisionId;
 			$newRevision = false;
+                        $newEntity = true;
         }
         
 		$data = array(
@@ -146,11 +148,22 @@ abstract class Entity extends Model
             
             //  store meta data
             $this->saveMeta(false, $oldRevisionId);
+            
+            Hooks::doAction("update_entity_".$this->entityType, $this);
         }
         else
         {
             DB::update(Core::$activeStore->tables->entity)->set($data)->where('guid','=',$this->guid)->and_where('revisionId','=',$this->revisionId)->execute();
 			$this->saveMeta(true, $this->revisionId);
+            
+            if ($newEntity)
+            {
+                Hooks::doAction("new_entity_".$this->entityType, $this);
+            }
+            else
+            {
+                Hooks::doAction("review_entity_".$this->entityType, $this);
+            }
         }
     }
 	
@@ -565,6 +578,12 @@ abstract class Entity extends Model
                     $obj->{$row['metaKeyName']} = $row['metaValue'];
             }
         }
+        
+        foreach($ret as $obj)
+        {
+            Hooks::doAction("load_entity_".$obj->entityType, $obj);
+        }
+        
         return $ret;
     }
 }

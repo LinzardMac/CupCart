@@ -24,6 +24,8 @@ class Hooks
     */
     public static function addAction($actionName, $callback, $priority = 5)
     {
+        $actionName = strtolower($actionName);
+        
         if (!array_key_exists($actionName, self::$actionStack))
             self::$actionStack[$actionName] = array();
         
@@ -52,6 +54,7 @@ class Hooks
     */
     public static function doAction($actionName)
     {
+        $actionName = strtolower($actionName);
         if (!array_key_exists($actionName, self::$actionStack))
             return;
         $args = func_get_args();
