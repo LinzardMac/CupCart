@@ -91,7 +91,6 @@ class Currency
     public static function getByISO($isoCode)
     {
 	$currencies = self::currencies();
-	var_dump($currencies);
 	if (array_key_exists($isoCode, $currencies))
 	    return $currencies[$isoCode];
 	return null;
