@@ -28,6 +28,16 @@ class Store extends Entity
     public $tables;
     
     /**
+     * @var Currency Active currency as ISO-4217 code.
+    */
+    public $currency;
+    
+    /**
+     * @var Country Active country.
+    */
+    public $country;
+    
+    /**
      * Gets the active store.
      * @return Store The active store.
     */
@@ -44,6 +54,8 @@ class Store extends Entity
         $store->baseUri = '/whatevercart/index.php/';
         $store->timezone = 'America/Chicago';
         $store->tables = $tables;
+	$store->currency = Currency::getByISO("USD");
+	$store->country = Country::getByISO("USA");
         return $store;
     }
 }
