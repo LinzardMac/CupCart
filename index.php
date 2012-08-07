@@ -15,6 +15,14 @@ define("CC_ADMIN_THEMES_DIR", CC_ROOT_DIR.'cart-contents'.DIRECTORY_SEPARATOR.'a
 //  include config
 include(CC_ROOT_DIR.'config.php');
 
+//  quickly check if we need to forward to /index.php without running the core
+$checkStr = CC_ROOT_URI.CC_INDEX_FILE;
+if (substr($_SERVER['REQUEST_URI'], 0, strlen($checkStr)) != $checkStr)
+{
+    header("Location: ".CC_ROOT_URI.CC_INDEX_FILE);
+    exit;
+}
+
 //  define URL specific constants
 define("CC_THEMES_URI", CC_ROOT_URI."cart-contents/themes/");
 define("CC_ADMIN_THEMES_URI", CC_ROOT_URI."cart-contents/admin-themes/");
