@@ -86,27 +86,45 @@ class Theme
     
     /**
      * Gets the currently active theme.
+     * @var bool $admin If the current request is for an admin page.
      * @return Theme The currently active theme.
     */
-    public static function getActive()
+    public static function getActive($admin = false)
     {
-        //  twentyten good enough for WP so...
-        $theme = 'twentytwelve';
-        if (self::isUseable('wootique'))
-            $theme = 'wootique';
-        return Hooks::applyFilter('active_theme', self::getByShortName($theme));
+        if ($admin)
+        {
+            return Hooks::applyFilter('active_admin_theme', self::getByShortName('default', true));
+        }
+        else
+        {
+            //  twentyten good enough for WP so...
+            $theme = 'twentytwelve';
+            if (self::isUseable('wootique'))
+                $theme = 'wootique';
+            return Hooks::applyFilter('active_theme', self::getByShortName($theme));
+        }
     }
     
     /**
      * Gets a theme by name.
      * @param string $themeShortName Name of the theme to get.
+     * @param bool $admin If the theme is an admin theme.
      * @return Theme The theme.
     */
-    public static function getByShortName($themeShortName)
+    public static function getByShortName($themeShortName, $admin = false)
     {
         $theme = new Theme();
-        $theme->localUri = CC_THEMES_DIR.$themeShortName.DIRECTORY_SEPARATOR;
-        $theme->httpUri = CC_THEMES_URI.$themeShortName.'/';
+        
+        if ($admin)
+        {
+            $theme->localUri = CC_ADMIN_THEMES_DIR.$themeShortName.DIRECTORY_SEPARATOR;
+            $theme->httpUri = CC_ADMIN_THEMES_URI.$themeShortName.'/';
+        }
+        else
+        {
+            $theme->localUri = CC_THEMES_DIR.$themeShortName.DIRECTORY_SEPARATOR;
+            $theme->httpUri = CC_THEMES_URI.$themeShortName.'/';
+        }
         
         if (file_exists($theme->localUri.'style.css'))
         {

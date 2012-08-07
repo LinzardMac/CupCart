@@ -4,6 +4,10 @@
 */
 //  root URI, must end with a slash
 define("CC_ROOT_URI", "/whatevercart/");
+
+//  admin URI, must end with a slash, defines where the admin pages are located
+define("CC_ADMIN_URI", "/admin/");
+
 //  set this to empty if using mod_rewrite or similar
 define("CC_INDEX_FILE", "index.php");
 

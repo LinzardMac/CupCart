@@ -10,12 +10,14 @@ define("CC_INCLUDES_DIR", CC_ROOT_DIR.'cart-includes'.DIRECTORY_SEPARATOR);
 define("CC_PLUGINS_DIR", CC_ROOT_DIR.'cart-contents'.DIRECTORY_SEPARATOR.'plugins'.DIRECTORY_SEPARATOR);
 define("CC_MUPLUGINS_DIR", CC_ROOT_DIR.'cart-contents'.DIRECTORY_SEPARATOR.'mu-plugins'.DIRECTORY_SEPARATOR);
 define("CC_THEMES_DIR", CC_ROOT_DIR.'cart-contents'.DIRECTORY_SEPARATOR.'themes'.DIRECTORY_SEPARATOR);
+define("CC_ADMIN_THEMES_DIR", CC_ROOT_DIR.'cart-contents'.DIRECTORY_SEPARATOR.'admin-themes'.DIRECTORY_SEPARATOR);
 
 //  include config
 include(CC_ROOT_DIR.'config.php');
 
 //  define URL specific constants
 define("CC_THEMES_URI", CC_ROOT_URI."cart-contents/themes/");
+define("CC_ADMIN_THEMES_URI", CC_ROOT_URI."cart-contents/admin-themes/");
 
 //  bootstrap environment
 spl_autoload_register('cart_autoload', true, true);

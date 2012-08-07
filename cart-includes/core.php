@@ -31,11 +31,6 @@ class Core
     public static $plugins = array();
     
     /**
-     * @var Request Current request.
-    */
-    private static $_request = null;
-    
-    /**
      * Runs Whatevercart.
     */
     public static function run()
@@ -44,7 +39,14 @@ class Core
         self::bootstrap();
         
         //  get queried object
-        $queryObj = Hooks::applyFilter('resolve_queryObject', self::getQueriedObject());
+	$routerClass = Hooks::applyFilter("request_router", "Router_Basic");
+        $queryObj = Hooks::applyFilter('resolve_queryObject', call_user_func($routerClass."::resolveQueryObject"));
+        
+        //  setup theme
+        $isAdmin = ($queryObj == 'Admin') ? true : false;
+        self::$activeTheme = Theme::getActive($isAdmin);
+        Theme::bootstrap(self::$activeTheme);
+        
         if ($queryObj == null)
         {
             throw new HTTP_Exception_404();
@@ -55,7 +57,7 @@ class Core
         
         //  create controller instance
         $controller = new $controllerType();
-        $controller->request = self::$_request;
+        $controller->request = self::parseUrl();
         self::$activeController = $controller;
         
         //  resolve actionable method
@@ -82,21 +84,17 @@ class Core
         //  load taxanomy types
         Taxonomy::loadAll();
 		
-        //  activate the current theme
-        self::$activeTheme = Theme::getActive();
-        Theme::bootstrap(self::$activeTheme);
-		
-		//  load widgets
-		Widget::register("Widget_Cart");
-		Widget::register("Widget_Taxonomy");
-		Hooks::doAction("register_widgets");
-		
-		//  add widgets to widgetspaces based on settings
-		$spaces = WidgetSpace::getAll();
-		foreach($spaces as $space)
-		{
-			$space->add('Widget_Taxonomy', array('taxonomy' => Category::getTaxonomy()->guid));
-		}
+        //  load widgets
+        Widget::register("Widget_Cart");
+        Widget::register("Widget_Taxonomy");
+        Hooks::doAction("register_widgets");
+        
+        //  add widgets to widgetspaces based on settings
+        $spaces = WidgetSpace::getAll();
+        foreach($spaces as $space)
+        {
+            $space->add('Widget_Taxonomy', array('taxonomy' => Category::getTaxonomy()->guid));
+        }
     }
     
     /**
@@ -137,111 +135,11 @@ class Core
     }
     
     /**
-     * Gets the object currently being requested.
-     * @return mixed Queried object or string.
-    */
-    public static function getQueriedObject()
-    {
-        //  if looking at a page
-        if (self::requestIsForPage())
-        {
-            $pageUri = substr(self::$_request->rawPath, 6);
-            $entities = Entity::getByMeta('uri', $pageUri, 1, 0, 'Page');
-            if (sizeof($entities) < 0) return null;
-            return array_shift($entities);
-        }
-        //  else if looking at a specific entity
-        else if (self::requestIsForEntity())
-        {
-            $entityType = self::$_request->path[1];
-            $bits = explode("-", self::$_request->file);
-            $entityId = intval($bits[sizeof($bits)-1]);
-            $entity = Entity::getByGuid($entityId);
-            if ($entity->entityType != $entityType)
-                return null;
-            return $entity;
-        }
-        else if (self::requestIsForCheckout())
-        {
-            return 'Checkout';
-        }
-        else if (self::requestIsForCart())
-        {
-            return 'Cart';
-        }
-        else if (self::requestIsForListing())
-        {
-            return 'Listing';
-        }
-        else if (self::requestIsForFrontPage())
-        {
-            return 'FrontPage';
-        }
-        return null;
-    }
-    
-    /**
      * Parses the current request URL.
      * Caches the results for later use.
     */
     public static function parseUrl()
     {
-        if (self::$_request == null)
-            self::$_request = Hooks::applyFilter("the_request", new Request($_SERVER['REQUEST_URI']));
-        return self::$_request;
-    }
-    
-    public static function requestIsForCheckout()
-    {
-        $request = self::parseUrl();
-        if (sizeof($request->path) > 0 && strtolower($request->path[0]) == 'checkout')
-            return true;
-        return false;
-    }
-    
-    public static function requestIsForCart()
-    {
-        $request = self::parseUrl();
-        if (sizeof($request->path) > 0 && strtolower($request->path[0]) == 'cart')
-            return true;
-        return false;
-    }
-    
-    public static function requestIsForListing()
-    {
-        $request = self::parseUrl();
-        if (sizeof($request->path) == 2 && strtolower($request->path[0]) == 'store')
-            return true;
-        return false;
-    }
-    
-    public static function requestIsForFrontPage()
-    {
-        $request = self::parseUrl();
-        switch(strtolower($request->rawPath))
-        {
-            case "":
-            case "/":
-            case "/home":
-                return true;
-            default:
-                return false;
-        }
-    }
-    
-    public static function requestIsForPage()
-    {
-        $request = self::parseUrl();
-        if (sizeof($request->path) > 1 && strtolower($request->path[0]) == "cms")
-            return true;
-        return false;
-    }
-    
-    public static function requestIsForEntity()
-    {
-        $request = self::parseUrl();
-        if (sizeof($request->path) > 2 && strtolower($request->path[0]) == 'store')
-            return true;
-        return false;
+        return Hooks::applyFilter("the_request", new Request($_SERVER['REQUEST_URI']));
     }
 }

@@ -1,0 +1,79 @@
+/* 
+Theme Name: Default Admin
+Version: 1.0
+*/ 
+body{
+background: url(img/bg.jpg) repeat; 
+}
+ul{
+margin:0px;
+}
+a:focus{
+border:none;
+outline:none;
+}
+#wrapper{
+ width: 80%; 
+ margin:0px auto;
+ } 
+ #header{
+ height: 150px;
+ }
+ #sidebar{
+ width: 30%; 
+ float:left; 
+  background: #c4c4c4;
+margin-top:35px;
+ } 
+ #main{
+    clear: right;
+    display: block;
+    float: right;
+    width: 70%;
+ } 
+ #main-content{
+ background: none repeat scroll 0 0 #C4C4C4;
+    box-shadow: 0 0 15px grey;
+    }
+ .clear{
+ float:none;
+ clear:both; 
+ }
+ 
+ #sidebar ul, #sidebar h2{
+ text-align:right;
+ }
+ #main-content div, #sidebar div{
+ padding:25px;
+ }
+  #quick-links img{
+  margin:5px;
+  }
+   #inventoryadmin, #csadmin{
+ width: 43%; 
+ float:left;
+ }
+ #chartArea{
+ background:transparent;
+ }
+ /**  my bootstrap customizations **/
+ .nav{
+ margin:0px; 
+ border:none;
+ }
+#main-content,  .control-group{
+ padding: 10px;
+ }
+ select[class*="span"], select, textarea, input[type="text"], input[type="password"], input[type="datetime"], input[type="datetime-local"], input[type="date"], input[type="month"], input[type="time"], input[type="week"], input[type="number"], input[type="email"], input[type="url"], input[type="search"], input[type="tel"], input[type="color"], .uneditable-input{
+ color: #555555;
+    display: inline-block;
+    font-size: 13px;
+    height: 30px;
+    line-height: 29px;
+    margin-bottom: 9px;
+    padding: 2px;
+    margin:5px;
+ }
+.form-horizontal div{
+padding:10px !important;
+}
