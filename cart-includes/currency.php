@@ -23,6 +23,33 @@ class Currency
      * @var string Currency name.
     */
     public $name;
+    /**
+     * @var string Currency symbol.
+    */
+    public $symbol;
+    /**
+     * @var string Display name, singular.
+    */
+    public $displayName;
+    /**
+     * @var string Display name, plural.
+    */
+    public $displayNamePlural;
+    
+    public function __construct($alphaCode, $numericCode, $exponent, $name, $symbol = '',
+	$displayName = '', $displayNamePlural = '')
+    {
+	$this->alphaCode = $alphaCode;
+	$this->numericCode = $numericCode;
+	$this->exponent = $exponent;
+	$this->name = $name;
+	$this->symbol = $symbol;
+	$this->displayName = $displayName;
+	$this->displayNamePlural = $displayNamePlural;
+	
+	if ($this->displayName == '') $this->displayName = $this->name;
+	if ($this->displayNamePlural == '') $this->displayNamePlural = $this->displayName.'s';
+    }
 
     /**
      * Gets an array of supported currencies.
@@ -36,12 +63,20 @@ class Currency
 	    foreach($data as $currencyInfo)
 	    {
 		list($code, $number, $exponent, $name) = $currencyInfo;
-		$obj = new Currency();
-		$obj->alphaCode = $code;
-		$obj->numericCode = $number;
-		$obj->exponent = $exponent;
-		$obj->name = $name;
-		self::$currencies[$code] = $obj;
+		
+		$size = sizeof($currencyInfo);
+		$symbol = '';
+		if($size > 4)
+		    $symbol = $currencyInfo[4];
+		$displayName = $name;
+		if($size > 5)
+		    $displayName = $currencyInfo[5];
+		$displayNamePlural = $displayName.'s';
+		if($size > 6)
+		    $displayNamePlural = $currencyInfo[6];
+		
+		self::$currencies[$code] = new Currency($code, $number, $exponent, $name,
+		    $symbol, $displayName, $displayNamePlural);
 	    }
 	    self::$currencies = Hooks::applyFilter("currencies", self::$currencies);
 	}
@@ -56,6 +91,7 @@ class Currency
     public static function getByISO($isoCode)
     {
 	$currencies = self::currencies();
+	var_dump($currencies);
 	if (array_key_exists($isoCode, $currencies))
 	    return $currencies[$isoCode];
 	return null;

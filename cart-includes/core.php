@@ -35,9 +35,12 @@ class Core
     */
     public static function run()
     {
+	//  set a default content-type for utf-8, images/binary files can override if needs be
+	header("Content-Type: text/html; charset=utf-8");
+	
         //  bootstrap
         self::bootstrap();
-        
+	
         //  get queried object
 	$routerClass = Hooks::applyFilter("request_router", "Router_Basic");
         $queryObj = Hooks::applyFilter('resolve_queryObject', call_user_func($routerClass."::resolveQueryObject"));
