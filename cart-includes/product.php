@@ -69,6 +69,8 @@ class Product extends Entity
 	    $prices = array($this->prices);
 	foreach($prices as $price)
 	{
+	    if ($price == null) continue;
+	    
 	    if (substr($price, 0, 3) == $currency->alphaCode)
 	    {
 		$amount = substr($price, 4);
