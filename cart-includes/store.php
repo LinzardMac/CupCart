@@ -30,7 +30,7 @@ class Store extends Entity
     /**
      * @var Currency Active currency as ISO-4217 code.
     */
-    public $currency;
+    public $currencies;
     
     /**
      * @var Country Active country.
@@ -54,7 +54,7 @@ class Store extends Entity
         $store->baseUri = '/whatevercart/index.php/';
         $store->timezone = 'America/Chicago';
         $store->tables = $tables;
-	$store->currency = Currency::getByISO("USD");
+	$store->currencies = array(Currency::getByISO("USD"), Currency::getByISO("GBP"), Currency::getByISO("JPY"));
 	$store->country = Country::getByISO("USA");
         return $store;
     }

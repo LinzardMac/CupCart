@@ -35,9 +35,13 @@ class Currency
      * @var string Display name, plural.
     */
     public $displayNamePlural;
+    /**
+     * @var string Currency display format format string with the following format codes: %s - currency symbol, %m - major amount, %e - exponent (minor) amount, %n - currency name, %d - currency display name, %c - iso code
+    */
+    public $format;
     
     public function __construct($alphaCode, $numericCode, $exponent, $name, $symbol = '',
-	$displayName = '', $displayNamePlural = '')
+	$format = '', $displayName = '', $displayNamePlural = '')
     {
 	$this->alphaCode = $alphaCode;
 	$this->numericCode = $numericCode;
@@ -46,9 +50,47 @@ class Currency
 	$this->symbol = $symbol;
 	$this->displayName = $displayName;
 	$this->displayNamePlural = $displayNamePlural;
+	$this->format = $format;
 	
 	if ($this->displayName == '') $this->displayName = $this->name;
 	if ($this->displayNamePlural == '') $this->displayNamePlural = $this->displayName.'s';
+	if ($this->format == '') $this->format = '%s%m.%e %c';
+    }
+    
+    /**
+     * Formats a given amount into a string.
+     * @param float $amount Monetary amount.
+     * @param string $format Custom format string.
+     * @return string
+    */
+    public function formatAmount($amount, $format = '')
+    {
+	if ($format == '')
+	    $format = $this->format;
+	
+	$majorAmount = floor($amount);
+	$minorAmount = sprintf("%0".$this->exponent."d", ($amount - $majorAmount) * (pow(10, $this->exponent)));
+	
+	$match = array(
+	    '%s'	=> $this->symbol,
+	    '%m'	=> $majorAmount,
+	    '%e'	=> $minorAmount,
+	    '%n'	=> $this->name,
+	    '%d'	=> ($majorAmount > 1) ? $this->displayNamePlural : $this->displayName,
+	    '%c'	=> $this->alphaCode
+	);
+	return str_replace(array_keys($match), $match, $format);
+    }
+    
+    /**
+     * Converts an amount into another currency using cached exchange rates.
+     * @param float $amount Monetary amount.
+     * @param mixed $sourceCurrency Source currency as ISO-4217 string or [Currency] instance.
+     * @param mixed $targetCurrency Target currency as ISO-4217 string or [Currency] instance.
+    */
+    public static function convert($amount, $sourceCurrency, $targetCurrency)
+    {
+	return 0;
     }
 
     /**
@@ -68,15 +110,18 @@ class Currency
 		$symbol = '';
 		if($size > 4)
 		    $symbol = $currencyInfo[4];
-		$displayName = $name;
+		$format = '';
 		if($size > 5)
-		    $displayName = $currencyInfo[5];
-		$displayNamePlural = $displayName.'s';
+		    $format = $currencyInfo[5];
+		$displayName = $name;
 		if($size > 6)
-		    $displayNamePlural = $currencyInfo[6];
+		    $displayName = $currencyInfo[6];
+		$displayNamePlural = $displayName.'s';
+		if($size > 7)
+		    $displayNamePlural = $currencyInfo[7];
 		
 		self::$currencies[$code] = new Currency($code, $number, $exponent, $name,
-		    $symbol, $displayName, $displayNamePlural);
+		    $symbol, $format, $displayName, $displayNamePlural);
 	    }
 	    self::$currencies = Hooks::applyFilter("currencies", self::$currencies);
 	}
