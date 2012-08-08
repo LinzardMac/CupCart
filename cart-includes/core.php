@@ -42,8 +42,7 @@ class Core
         self::bootstrap();
 	
         //  get queried object
-	$routerClass = Hooks::applyFilter("request_router", "Router_Basic");
-        $queryObj = Hooks::applyFilter('resolve_queryObject', call_user_func($routerClass."::resolveQueryObject"));
+        $queryObj = Hooks::applyFilter('resolve_queryObject', Router::resolve());
         
         //  setup theme
         $isAdmin = ($queryObj == 'Admin') ? true : false;
@@ -75,6 +74,9 @@ class Core
     */
     private static function bootstrap()
     {
+	//  add the basic router to the routing stack
+	Router::add(new Router_Basic(), 100);
+    
         //  load store information
         self::$activeStore = Store::getActive();
         View::setGlobal('store', self::$activeStore);

@@ -6,7 +6,7 @@
 */
 class Router_Basic extends Router
 {
-	/**
+    /**
      * @var Request Current request.
     */
     private static $_request = null;
@@ -21,8 +21,13 @@ class Router_Basic extends Router
             self::$_request = Hooks::applyFilter("the_request", new Request($_SERVER['REQUEST_URI']));
         return self::$_request;
     }
+    
+    public function getLinkToObject($object)
+    {
+	return null;
+    }
 	
-	public static function resolveQueryObject()
+	public function resolveQueryObject()
 	{
 		//  if looking at a page
 		if (self::requestIsForAdmin())
