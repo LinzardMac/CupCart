@@ -10,6 +10,10 @@ class Product extends Entity
     */
     public $prices;
     /**
+     * @var string ISO-4217 identifier for currency to automatically convert prices from.
+    */
+    public $conversionCurrency;
+    /**
      * @var string Name of the product.
     */
     public $name;
@@ -40,7 +44,7 @@ class Product extends Entity
     {
 	//  prices are stored as an array in the format
 	//  array("USD:1.00", "JPY:1000", ...)
-	//  the format "USD:-" denotes an automatic converstion using the FIRST non-automatic amount and the most recent conversion rates
+	//  the format "USD:-" denotes an automatic converstion
 	
 	if ($currency == '')
 	    $currency = Core::$activeStore->currencies[0];
@@ -70,29 +74,14 @@ class Product extends Entity
 		$amount = substr($price, 4);
 		if ($amount == "-")
 		{
-		    $baseCurrency = $this->getConversionBaseCurrency();
+		    $baseCurrency = Currency::getByISO($this->conversionCurrency);
+		    if ($baseCurrency == null)
+			return null;
 		    $amount = $this->getPrice($baseCurrency);
 		    return Currency::convert($amount, $baseCurrency, $currency);
 		}
 		return floatval($amount);
 	    }
-	}
-	return null;
-    }
-    
-    /**
-     * Gets the currency this product will use for automatic currency conversions.
-     * @return Currency
-    */
-    public function getConversionBaseCurrency()
-    {
-	$prices = $this->prices;
-	if (!is_array($prices))
-	    $prices = array($this->prices);
-	foreach($prices as $price)
-	{
-	    if(substr($price, 4, 1) != "-")
-		return Currency::getByISO(substr($price, 0, 3));
 	}
 	return null;
     }
