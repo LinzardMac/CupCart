@@ -21,7 +21,7 @@ abstract class Router
      * Create a link to an object.
      * @return string
     */
-    abstract public function getLinkToObject($object);
+    abstract public function getLinkToObject($object, $params = array(), $loop = null);
     
     /**
      * Resolve query object using the router stack.
@@ -36,6 +36,25 @@ abstract class Router
 		$obj = $router->resolveQueryObject();
 		if ($obj != null)
 		    return $obj;
+	    }
+	}
+	return null;
+    }
+    
+    /**
+     * Product a URL to an object.
+     * @param mixed $object The object to link to.
+     * @return string
+    */
+    public static function url($object, $params = array(), $loop = null)
+    {
+	foreach(self::$stack as $prio => $routers)
+	{
+	    foreach($routers as $router)
+	    {
+		$url = $router->getLinkToObject($object, $params, $loop);
+		if ($url != null && $url != '')
+		    return $url;
 	    }
 	}
 	return null;

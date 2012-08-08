@@ -83,8 +83,7 @@ class Loop
         if ($this->entity != null)
         {
             $store = Core::$activeStore;
-            return Hooks::applyFilter('the_url',$store->baseUri.'store/'
-                . get_class($this->entity) . '/category stuff here/'.rawurlencode($this->theTitle()).'-'.$this->entity->guid);
+            return Hooks::applyFilter('the_url',Router::url($this->entity, array(), $this));
         }
         return '';
     }
@@ -98,7 +97,7 @@ class Loop
         if ($this->entity != null)
         {
             $store = Core::$activeStore;
-            return Hooks::applyFilter('the_addtocart_url',$store->baseUri.'cart/add/'.$this->entity->guid);
+            return Hooks::applyFilter('the_addtocart_url',Router::url('Cart',array('action'=>'add','entity'=>$this->entity),$this));
         }
         return '';
     }

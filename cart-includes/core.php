@@ -48,6 +48,13 @@ class Core
         $isAdmin = ($queryObj == 'Admin') ? true : false;
         self::$activeTheme = Theme::getActive($isAdmin);
         Theme::bootstrap(self::$activeTheme);
+	
+	//  add widgets to widgetspaces based on settings
+        $spaces = WidgetSpace::getAll();
+        foreach($spaces as $space)
+        {
+            $space->add('Widget_Taxonomy', array('taxonomy' => Category::getTaxonomy()->guid));
+        }
         
         if ($queryObj == null)
         {
@@ -97,13 +104,6 @@ class Core
         Widget::register("Widget_Cart");
         Widget::register("Widget_Taxonomy");
         Hooks::doAction("register_widgets");
-        
-        //  add widgets to widgetspaces based on settings
-        $spaces = WidgetSpace::getAll();
-        foreach($spaces as $space)
-        {
-            $space->add('Widget_Taxonomy', array('taxonomy' => Category::getTaxonomy()->guid));
-        }
 	
 	Hooks::doAction("bootstrap");
     }

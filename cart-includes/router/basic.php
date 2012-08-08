@@ -22,9 +22,28 @@ class Router_Basic extends Router
         return self::$_request;
     }
     
-    public function getLinkToObject($object)
+    public function getLinkToObject($object, $params = array(), $loop = null)
     {
-	return null;
+	if ($object instanceof Entity)
+	{
+	    $title = '';
+	    if ($loop != null) $title = $loop->theTitle();
+	    return Core::$activeStore->baseUri.'store/'
+                . get_class($object) . '/category stuff here/'.rawurlencode($title).'-'.$object->guid;
+	}
+	else if ($object == 'Cart')
+	{
+	    $action = '';
+	    $entity = null;
+	    if (array_key_exists('entity',$params))
+		$entity = $params['entity'];
+	    if (array_key_exists('action',$params))
+		$action = $params['action'];
+	    if ($action != '' && $entity != null)
+		return Core::$activeStore->baseUri.'cart/'.$action.'/'.$entity->guid;
+	    else
+		return Core::$activeStore->baseUri.'cart';
+	}
     }
 	
 	public function resolveQueryObject()
