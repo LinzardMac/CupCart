@@ -63,7 +63,11 @@ class Core
         self::$activeController = $controller;
         
         //  resolve actionable method
-        $method = Hooks::applyFilter('resolve_action', 'get_index');
+        $method = Hooks::applyFilter('resolve_action', strtolower($_SERVER['REQUEST_METHOD']) . '_index');
+	
+	$methods = get_class_methods($controller);
+	if ($methods == null || !in_array($method, $methods))
+	    throw new HTTP_Exception_404();
         
         //  call
         $controller->$method();
@@ -100,6 +104,8 @@ class Core
         {
             $space->add('Widget_Taxonomy', array('taxonomy' => Category::getTaxonomy()->guid));
         }
+	
+	Hooks::doAction("bootstrap");
     }
     
     /**
