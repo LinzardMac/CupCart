@@ -83,7 +83,12 @@ class Loop
         if ($this->entity != null)
         {
             $store = Core::$activeStore;
-            return Hooks::applyFilter('the_url',Router::url($this->entity, array(), $this));
+            return Hooks::applyFilter('the_url',Router::url('default', array(
+		'controller'	=> 'product',
+		'action'	=> 'view',
+		'title'		=> $this->theTitle(),
+		'entity'	=> $this->entity
+	    )));
         }
         return '';
     }
@@ -97,7 +102,7 @@ class Loop
         if ($this->entity != null)
         {
             $store = Core::$activeStore;
-            return Hooks::applyFilter('the_addtocart_url',Router::url('Cart',array('action'=>'add','entity'=>$this->entity),$this));
+            return Hooks::applyFilter('the_addtocart_url',Router::url('default',array('controller'=>'cart','title'=>$this->theTitle(),'action'=>'add','entity'=>$this->entity)));
         }
         return '';
     }

@@ -27,7 +27,7 @@ class Router_Basic extends Router
     public function __construct()
     {
 	$this->_routes = array();
-	$this->addRoute(Route::factory('default', '(<controller>(/<action>(/<entity>))(.<format>))')
+	$this->addRoute(Route::factory('default', '(<controller>(/<action>(/<category1>)(/<category2>)(/<category3>)(/<category4>)(/<category5>)(/<category6>)(/<category7>)(/<category8>)(/<category9>)(/<category10>)(/(<title>-)<entity>))(.<format>))')
 	    ->defaults(array('controller'=>'FrontPage','action'=>'index', 'format'=>'html')));
     }
     
