@@ -188,6 +188,17 @@ class TPL
     }
     
     /**
+     * Gets <img /> markup for the active product.
+     * @return string
+    */
+    public static function getTheThumbnail($size = '')
+    {
+        if (self::$activeProductLoop == null)
+            return '';
+        return self::$activeProductLoop->theThumbnail($size);
+    }
+    
+    /**
      * Gets the URL of the active product.
      * @return string The Url.
     */

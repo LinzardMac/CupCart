@@ -21,6 +21,28 @@ class Theme
      * @var string Location of the theme's directory relative to the document root.
     */
     public $httpUri;
+    /**
+     * @var array Array of supported thumbnail sizes.
+    */
+    public $thumbnailSizes;
+    
+    /**
+     * Gets thumbnail sizes.
+    */
+    public function getThumbnailSizes()
+    {
+	return array_keys($this->thumbnailSizes);
+    }
+    
+    /**
+     * Gets thumbnail size if it exists.
+    */
+    public function getThumbnailSize($name)
+    {
+	if (array_key_exists($name, $this->thumbnailSizes))
+	    return $this->thumbnailSizes[$name];
+	return null;
+    }
     
     /**
      * Gets all installed and useable themes.
@@ -131,6 +153,19 @@ class Theme
             $meta = File::metaData($theme->localUri.'style.css');
             $theme->name = arr::get($meta, 'Theme Name', '');
             $theme->version = arr::get($meta, 'Version', '');
+	    $theme->thumbnailSizes = array();
+	    $thumbStr = arr::get($meta, 'Thumbnails', '');
+	    if ($thumbStr != '')
+	    {
+		$bits = explode(",", $thumbStr);
+		foreach($bits as $bit)
+		{
+		    if (trim($bit)=='') continue;
+		    list($name, $size) = explode(" ", trim($bit));
+		    list($width,$height) = explode("x", $size);
+		    $theme->thumbnailSizes[$name] = array($width, $height);
+		}
+	    }
         }
 
         return $theme;

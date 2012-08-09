@@ -108,13 +108,19 @@ class Hooks
     {
         if (!array_key_exists($filterName, self::$filterStack))
             return $value;
+	$args = func_get_args();
+        array_shift($args);
+	array_shift($args);
         $filters = self::$filterStack[$filterName];
         $newValue = $value;
         foreach($filters as $prio => $callbacks)
         {
             foreach($callbacks as $callback)
             {
-                $newValue = call_user_func_array($callback, array($value));
+		$callbackArgs = array($newValue);
+		foreach($args as $val)
+		    $callbackArgs[] = $val;
+                $newValue = call_user_func_array($callback, $callbackArgs);
             }
         }
         return $newValue;

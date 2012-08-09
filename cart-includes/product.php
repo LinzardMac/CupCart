@@ -45,15 +45,46 @@ class Product extends Entity
     
     /**
      * Gets a thumbnail for the product in the given preset size.
-     * Returns a URL to the image.
+     * @param string $size Name of a thumbnail size.
+     * @return Image
     */
-    public function getThumbnail($size = 'small')
+    public function getThumbnail($size = '')
     {
+	if ($size == '')
+	{
+	    $sizes = Core::$activeTheme->getThumbnailSizes();
+	    if (sizeof($sizes) < 1)
+		return null;
+	    $size = $sizes[0];
+	}
+	$dimensions = Core::$activeTheme->getThumbnailSize($size);
+	if ($dimensions == null) return null;
+	list($width, $height) = $dimensions;
+	$targetDimensions = $width.'x'.$height;
+    
 	if ($this->thumbnailAttachment == null)
 	    $this->thumbnailAttachment = Entity::getByGuid($this->thumbnailAttachmentGuid, 'Attachment');
 	if ($this->thumbnailAttachment instanceof Attachment && $this->thumbnailAttachment->type == Attachment::TYPE_IMAGE)
-	    return $this->thumbnailAttachment->fileUrl;
-	return '';
+	{
+	    $fileName = '';
+	    $thumbnails = $this->thumbnailAttachment->thumbnails;
+	    if (!is_array($thumbnails))
+		$thumbnails = array($thumbnails);
+	    foreach($thumbnails as $thumb)
+	    {
+		if ($thumb == null || trim($thumb) == '')
+		    continue;
+		list($dimensions, $name) = explode(":", $thumb, 2);
+		if ($dimensions == $targetDimensions)
+		    $fileName = $name;
+	    }
+	    if ($fileName == '') return null;
+	    $fileDir = $this->thumbnailAttachment->directoryUri;
+	    if (!$this->thumbnailAttachment->isLocal)
+		$fileDir = $this->thumbnailAttachment->directoryUrl;
+	    return new Image($fileDir.$fileName, $this->thumbnailAttachment->directoryUrl.$fileName, $this->thumbnailAttachment->isLocal, $width, $height);
+	}
+	return null;
     }
     
     /**

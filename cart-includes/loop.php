@@ -110,9 +110,23 @@ class Loop
     /**
      * Gets an <img /> HTML tag to use for displaying a thumbnail.
     */
-    public function theThumbnail($size = 'small')
+    public function theThumbnail($size = '')
     {
+	$image = $this->theThumbnailImage($size);
+	if ($image != null)
+	{
+	    return '<img src="'.$image->url.'" width="'.$image->width.'" height="'.$image->height.'" />';
+	}
+	return '';
+    }
     
+    public function theThumbnailImage($size = '')
+    {
+	if ($this->entity != null)
+        {
+	    return Hooks::applyFilter("the_thumbnail", $this->entity->getThumbnail($size), $this->entity);
+	}
+	return null;
     }
     
     /**
