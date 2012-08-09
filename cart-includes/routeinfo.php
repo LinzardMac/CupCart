@@ -7,9 +7,11 @@ class RouteInfo
     public $entity;
     public $format;
     public $params;
+    public $route;
     
-    public function __construct($controller, $action, $format, $entity = null, $params = array())
+    public function __construct($route, $controller, $action, $format, $entity = null, $params = array())
     {
+	$this->route = $route;
 	$this->controller = $controller;
 	$this->action = $action;
 	$this->entity = $entity;

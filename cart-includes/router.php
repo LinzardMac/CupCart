@@ -21,7 +21,7 @@ abstract class Router
      * Create a link to an object.
      * @return string
     */
-    abstract public function getLinkToObject($object, $params = array(), $loop = null);
+    abstract public function uri($routeName, $params);
     
     /**
      * Attempts to match the request to a route.
@@ -47,15 +47,15 @@ abstract class Router
      * @param mixed $object The object to link to.
      * @return string
     */
-    public static function url($object, $params = array(), $loop = null)
+    public static function url($routeName, $params)
     {
 	foreach(self::$stack as $prio => $routers)
 	{
 	    foreach($routers as $router)
 	    {
-		$url = $router->getLinkToObject($object, $params, $loop);
+		$url = $router->uri($routeName, $params);
 		if ($url != null && $url != '')
-		    return $url;
+		    return Core::$activeStore->baseUri . $url;
 	    }
 	}
 	return null;

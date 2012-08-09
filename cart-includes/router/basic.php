@@ -31,9 +31,19 @@ class Router_Basic extends Router
 	    ->defaults(array('controller'=>'FrontPage','action'=>'index', 'format'=>'html')));
     }
     
+    /**
+     * Produces a URI using the specified route and parameters.
+    */
+    public function uri($routeName, $params)
+    {
+	if (array_key_exists($routeName, $this->_routes))
+	    return $this->_routes[$routeName]->uri($params);
+	return null;
+    }
+    
     public function addRoute(Route $route)
     {
-	$this->_routes[] = $route;
+	$this->_routes[$route->name] = $route;
     }
     
     public function getLinkToObject($object, $params = array(), $loop = null)
