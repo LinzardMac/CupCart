@@ -5,8 +5,11 @@
 */
 class Attachment extends Entity
 {
+    const TYPE_IMAGE = 'image';
+    const TYPE_DOWNLOAD = 'download';
+
     /**
-     * @var string Attachment type. Built in types are "image" and "binary" (downloadable attachments).
+     * @var string Attachment type. Use the Attachment::TYPE_* constants.
     */
     public $type;
     

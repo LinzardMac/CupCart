@@ -33,6 +33,28 @@ class Product extends Entity
      * @var int Number of items in stock that are reserved or already sold.
     */
     public $reservedStock;
+    /**
+     * @var int Thumbnail attachment GUID.
+    */
+    public $thumbnailAttachmentGuid;
+    
+    /**
+     * @var Attachment Thumbnail attachment if it's been loaded.
+    */
+    private $thumbnailAttachment;
+    
+    /**
+     * Gets a thumbnail for the product in the given preset size.
+     * Returns a URL to the image.
+    */
+    public function getThumbnail($size = 'small')
+    {
+	if ($this->thumbnailAttachment == null)
+	    $this->thumbnailAttachment = Entity::getByGuid($this->thumbnailAttachmentGuid, 'Attachment');
+	if ($this->thumbnailAttachment instanceof Attachment && $this->thumbnailAttachment->type == Attachment::TYPE_IMAGE)
+	    return $this->thumbnailAttachment->fileUrl;
+	return '';
+    }
     
     /**
      * Gets the price of the product in the given currency.

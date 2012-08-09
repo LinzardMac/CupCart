@@ -27,6 +27,15 @@ class Router_Basic extends Router
     public function __construct()
     {
 	$this->_routes = array();
+	//  admin pages
+	$this->addRoute(Route::factory('admin', CC_ADMIN_DIRECTORY.'(/<action>(/<category1>)(/<category2>)(/<category3>)(/<category4>)(/<category5>)(/<category6>)(/<category7>)(/<category8>)(/<category9>)(/<category10>)(/(<title>-)<entity>))(.<format>)')
+	    ->defaults(array('controller'=>'admin', 'action'=>'index', 'format'=>'html')));
+	//  match admin controller to a non-existent controller to avoid /admin/ controller access
+	$this->addRoute(Route::factory('adminblock', 'admin(/<action>(/<category1>)(/<category2>)(/<category3>)(/<category4>)(/<category5>)(/<category6>)(/<category7>)(/<category8>)(/<category9>)(/<category10>)(/(<title>-)<entity>))(.<format>)')
+	    ->defaults(array('controller'=>'adminblock', 'action'=>'index', 'format'=>'html')));
+	//  static pages
+	$this->addRoute(Route::factory('static', 'p-<pagename>.html')->defaults(array('controller'=>'page', 'method'=>'index')));
+	//  normal routing
 	$this->addRoute(Route::factory('default', '(<controller>(/<action>(/<category1>)(/<category2>)(/<category3>)(/<category4>)(/<category5>)(/<category6>)(/<category7>)(/<category8>)(/<category9>)(/<category10>)(/(<title>-)<entity>))(.<format>))')
 	    ->defaults(array('controller'=>'FrontPage','action'=>'index', 'format'=>'html')));
     }

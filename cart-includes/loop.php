@@ -108,6 +108,14 @@ class Loop
     }
     
     /**
+     * Gets an <img /> HTML tag to use for displaying a thumbnail.
+    */
+    public function theThumbnail($size = 'small')
+    {
+    
+    }
+    
+    /**
      * Gets the title of the current entity.
      * @return string The entity's title.
     */
