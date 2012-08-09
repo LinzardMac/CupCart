@@ -15,7 +15,7 @@ abstract class Router
      * Resolve the current queried object.
      * @return mixed An entity object or controller name as a string.
     */
-    abstract public function resolveQueryObject();
+    abstract public function match(Request $request);
     
     /**
      * Create a link to an object.
@@ -24,16 +24,17 @@ abstract class Router
     abstract public function getLinkToObject($object, $params = array(), $loop = null);
     
     /**
-     * Resolve query object using the router stack.
-     * @return mixed An entity object or controller name as a string.
+     * Attempts to match the request to a route.
+     * @param Request $request
+     * @return mixed A populated [RouteInfo] object if matching, null otherwise.
     */
-    public static function resolve()
+    public static function resolve(Request $request)
     {
 	foreach(self::$stack as $prio => $routers)
 	{
 	    foreach($routers as $router)
 	    {
-		$obj = $router->resolveQueryObject();
+		$obj = $router->match($request);
 		if ($obj != null)
 		    return $obj;
 	    }

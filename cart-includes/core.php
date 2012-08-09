@@ -31,6 +31,11 @@ class Core
     public static $plugins = array();
     
     /**
+     * @var RouteInfo Currently active route info.
+    */
+    public static $activeRouteInfo = null;
+    
+    /**
      * Runs Whatevercart.
     */
     public static function run()
@@ -42,10 +47,11 @@ class Core
         self::bootstrap();
 	
         //  get queried object
-        $queryObj = Hooks::applyFilter('resolve_queryObject', Router::resolve());
+        $routeInfo = Hooks::applyFilter('resolve_routeinfo', Router::resolve(new Request($_SERVER['REQUEST_URI'])));
+	self::$activeRouteInfo = $routeInfo;
         
         //  setup theme
-        $isAdmin = ($queryObj == 'Admin') ? true : false;
+        $isAdmin = (strtolower($routeInfo->controller) == 'admin') ? true : false;
         self::$activeTheme = Theme::getActive($isAdmin);
         Theme::bootstrap(self::$activeTheme);
 	
@@ -56,21 +62,24 @@ class Core
             $space->add('Widget_Taxonomy', array('taxonomy' => Category::getTaxonomy()->guid));
         }
         
-        if ($queryObj == null)
+        if ($routeInfo == null)
         {
             throw new HTTP_Exception_404();
         }
         
         //  find and instantiate the controller used to respond for the queried object
-        $controllerType = self::resolveController($queryObj);
+        $controllerType = Hooks::applyFilter('resolve_controller', 'Controller_'.$routeInfo->controller);
+	if (!class_exists($controllerType))
+	    throw new HTTP_Exception_404();
         
         //  create controller instance
         $controller = new $controllerType();
         $controller->request = self::parseUrl();
+	$controller->routeInfo = $routeInfo;
         self::$activeController = $controller;
         
         //  resolve actionable method
-        $method = Hooks::applyFilter('resolve_action', strtolower($_SERVER['REQUEST_METHOD']) . '_index');
+        $method = Hooks::applyFilter('resolve_action', $routeInfo->action);
 	
 	$methods = get_class_methods($controller);
 	if ($methods == null || !in_array($method, $methods))
@@ -128,21 +137,6 @@ class Core
         foreach(self::$plugins as $plugin)
             $plugin->load();
         Hooks::doAction("plugins_loaded");
-    }
-    
-    /**
-     * Resolves which controller should handle the request for the given object.
-     * @param mixed $queryObj The string or object requested.
-     * @return string The datatype of the resolved controller.
-    */
-    public static function resolveController($queryObj)
-    {
-        $className = '';
-        if (is_object($queryObj))
-            $className = get_class($queryObj);
-        else
-            $className = (string)$queryObj;
-        return Hooks::applyFilter('resolve_controller', 'Controller_'.$className);
     }
     
     /**

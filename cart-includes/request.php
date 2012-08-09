@@ -21,9 +21,17 @@ class Request
      * @var string Query string.
     */
     public $queryString;
+    /**
+     * @var string Request method.
+    */
+    public $method;
     
-    public function __construct($url)
+    public function __construct($url, $method = '')
     {
+	if ($method == '')
+	    $method = $_SERVER['REQUEST_METHOD'];
+	$this->method = $method;
+	
         $compare = Core::$activeStore->baseUri;
         if (substr($compare, -1, 1) == "/") $compare = substr($compare, 0, -1);
         if (strtolower(substr($url, 0, strlen($compare))) == $compare)

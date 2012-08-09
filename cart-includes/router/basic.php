@@ -22,6 +22,20 @@ class Router_Basic extends Router
         return self::$_request;
     }
     
+    private $_routes;
+    
+    public function __construct()
+    {
+	$this->_routes = array();
+	$this->addRoute(Route::factory('default', '(<controller>(/<action>(/<entity>))(.<format>))')
+	    ->defaults(array('controller'=>'FrontPage','action'=>'index', 'format'=>'html')));
+    }
+    
+    public function addRoute(Route $route)
+    {
+	$this->_routes[] = $route;
+    }
+    
     public function getLinkToObject($object, $params = array(), $loop = null)
     {
 	if ($object instanceof Entity)
@@ -45,14 +59,26 @@ class Router_Basic extends Router
 		return Core::$activeStore->baseUri.'cart';
 	}
     }
-	
-	public function resolveQueryObject()
+    
+    /**
+     * Attemptes to match the request to a route.
+     * @param Request $request
+     * @return mixed A populated [RouteInfo] object if matching, null otherwise.
+    */
+    public function match(Request $request)
+    {
+	foreach($this->_routes as $route)
 	{
-		//  if looking at a page
-		if (self::requestIsForAdmin())
-		{
-			return 'Admin';
-		}
+	    $obj = $route->match($request);
+	    if ($obj != null)
+		return $obj;
+	}
+	/*
+	//  if looking at a page
+	if (self::requestIsForAdmin())
+	{
+		return 'Admin';
+	}
         else if (self::requestIsForPage())
         {
             $pageUri = substr(self::$_request->rawPath, 6);
@@ -88,18 +114,19 @@ class Router_Basic extends Router
             return 'FrontPage';
         }
         return null;
-	}
+	*/
+    }
 	
-	public static function requestIsForAdmin()
-	{
-		$request = self::parseUrl();
-		$pathLen = strlen($request->rawPath);
-		$checkUri = CC_ADMIN_URI;
-		if (substr($checkUri,-1) == "/") $checkUri = substr($checkUri, 0, strlen($checkUri)-1);
-		if ($pathLen >= strlen($checkUri) && strtolower(substr($request->rawPath, 0, $pathLen)) == strtolower($checkUri))
-			return true;
-		return false;
-	}
+    public static function requestIsForAdmin()
+    {
+	$request = self::parseUrl();
+	$pathLen = strlen($request->rawPath);
+	$checkUri = CC_ADMIN_URI;
+	if (substr($checkUri,-1) == "/") $checkUri = substr($checkUri, 0, strlen($checkUri)-1);
+	if ($pathLen >= strlen($checkUri) && strtolower(substr($request->rawPath, 0, $pathLen)) == strtolower($checkUri))
+		return true;
+	return false;
+    }
 	
     public static function requestIsForCheckout()
     {
