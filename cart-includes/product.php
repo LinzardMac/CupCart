@@ -10,6 +10,10 @@ class Product extends Entity
     */
     public $prices = array();
     /**
+     * @var array Array of variation guids.
+    */
+    public $variationGuids = array();
+    /**
      * @var string ISO-4217 identifier for currency to automatically convert prices from.
     */
     public $conversionCurrency;
@@ -30,6 +34,26 @@ class Product extends Entity
      * @var Attachment Thumbnail attachment if it's been loaded.
     */
     private $thumbnailAttachment;
+    
+    /**
+     * @var array Array of loaded variations.
+    */
+    private $loadedVariations;
+    
+    /**
+     * Gets variations for the product.
+    */
+    public function getVariations()
+    {
+	if ($this->loadedVariations == null)
+	{
+	    $fields = array();
+	    for($i = 0; $i < sizeof($this->variationGuids); $i++)
+		$fields[] = 'guid';
+	    $this->loadedVariations = Entity::getByMeta($fields, $this->variationGuids, 0, 0, 'Variation');
+	}
+	return $this->loadedVariations;
+    }
     
     /**
      * Gets a thumbnail for the product in the given preset size.

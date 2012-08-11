@@ -54,6 +54,18 @@ class Core
 	    $tax->name = 'Category';
 	    $tax->save();
 	    
+	    $color = new Attribute();
+	    $color->name = "Color";
+	    $color->limitedValues = true;
+	    $color->possibleValues = array("White", "Blue", "Red", "Black");
+	    $color->save();
+	    
+	    $size = new Attribute();
+	    $size->name = "Size";
+	    $size->limitedValues = true;
+	    $size->possibleValues = array("XXXL", "XXL", "XL", "L", "M", "S", "XS");
+	    $size->save();
+	    
 	    $apparel = new TaxonomyTerm();
 	    $apparel->name = 'Apparel';
 	    $apparel->taxonomyGuid = $tax->guid;
@@ -78,6 +90,20 @@ class Core
 	    $product->belongsToTaxonomies = array($subcat->guid);
 	    $product->save();
 	    
+	    foreach($color->possibleValues as $colorOption)
+	    {
+		foreach($size->possibleValues as $sizeOption)
+		{
+		    $variation = new Variation();
+		    $variation->productGuid = $product->guid;
+		    $variation->addAttribute($color, $colorOption);
+		    $variation->addAttribute($size, $sizeOption);
+		    $variation->save();
+		    $product->variationGuids[] = $variation->guid;
+		    $product->save(false);
+		}
+	    }
+	    
 	    $product = new Product();
 	    $product->name = 'Wolf Shirt';
 	    $product->description = 'This is a shirt. It has a wolf on it!';
@@ -85,6 +111,20 @@ class Core
 	    $product->conversionCurrency = "USD";
 	    $product->belongsToTaxonomies = array($subcat->guid);
 	    $product->save();
+	    
+	    foreach($color->possibleValues as $colorOption)
+	    {
+		foreach($size->possibleValues as $sizeOption)
+		{
+		    $variation = new Variation();
+		    $variation->productGuid = $product->guid;
+		    $variation->addAttribute($color, $colorOption);
+		    $variation->addAttribute($size, $sizeOption);
+		    $variation->save();
+		    $product->variationGuids[] = $variation->guid;
+		    $product->save(false);
+		}
+	    }
 	    
 	    $subcat = new TaxonomyTerm();
 	    $subcat->name = 'Shorts';

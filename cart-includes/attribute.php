@@ -6,7 +6,17 @@
 class Attribute extends Entity
 {
     /**
-     * Attribute name.
+     * @var string Attribute name.
     */
     public $name;
+    
+    /**
+     * @var bool True to use $possibleValues.
+    */
+    public $limitedValues;
+    
+    /**
+     * @var array Array of possible attribute values.
+    */
+    public $possibleValues = array();
 }
