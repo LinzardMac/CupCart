@@ -46,6 +46,88 @@ class Core
         //  bootstrap
         self::bootstrap();
 	
+	//  make sure basic taxonomies are installed, move this to an installer later
+	$tax = Entity::getByMeta('name','Category', 1, 0, 'Taxonomy');
+	if ($tax == null)
+	{
+	    $tax = new Taxonomy();
+	    $tax->name = 'Category';
+	    $tax->save();
+	    
+	    $apparel = new TaxonomyTerm();
+	    $apparel->name = 'Apparel';
+	    $apparel->taxonomyGuid = $tax->guid;
+	    $apparel->save();
+	    
+	    $kitchen = new TaxonomyTerm();
+	    $kitchen->name = 'Kitchenware';
+	    $kitchen->taxonomyGuid = $tax->guid;
+	    $kitchen->save();
+	    
+	    $subcat = new TaxonomyTerm();
+	    $subcat->name = 'T-Shirts';
+	    $subcat->taxonomyGuid = $tax->guid;
+	    $subcat->parent = $apparel->guid;
+	    $subcat->save();
+	    
+	    $product = new Product();
+	    $product->name = 'Dragon Shirt';
+	    $product->description = 'This is a shirt. It has dragons on it!';
+	    $product->prices = array("USD"=>1000,"GBP"=>'1000',"JPY"=>"-");
+	    $product->conversionCurrency = "USD";
+	    $product->belongsToTaxonomies = array($subcat->guid);
+	    $product->save();
+	    
+	    $product = new Product();
+	    $product->name = 'Wolf Shirt';
+	    $product->description = 'This is a shirt. It has a wolf on it!';
+	    $product->prices = array("USD"=>1000,"GBP"=>'1000',"JPY"=>"-");
+	    $product->conversionCurrency = "USD";
+	    $product->belongsToTaxonomies = array($subcat->guid);
+	    $product->save();
+	    
+	    $subcat = new TaxonomyTerm();
+	    $subcat->name = 'Shorts';
+	    $subcat->taxonomyGuid = $tax->guid;
+	    $subcat->parent = $apparel->guid;
+	    $subcat->save();
+	    
+	    $subcat = new TaxonomyTerm();
+	    $subcat->name = 'Dinnerware';
+	    $subcat->taxonomyGuid = $tax->guid;
+	    $subcat->parent = $kitchen->guid;
+	    $subcat->save();
+	    
+	    $product = new Product();
+	    $product->name = 'Plates';
+	    $product->description = 'I love plates!';
+	    $product->prices = array("USD"=>1000,"GBP"=>'1000',"JPY"=>"-");
+	    $product->conversionCurrency = "USD";
+	    $product->belongsToTaxonomies = array($subcat->guid);
+	    $product->save();
+	    
+	    $subcat = new TaxonomyTerm();
+	    $subcat->name = 'Cookware';
+	    $subcat->taxonomyGuid = $tax->guid;
+	    $subcat->parent = $kitchen->guid;
+	    $subcat->save();
+	    
+	    $product = new Product();
+	    $product->name = 'Saucepan Set';
+	    $product->description = 'A set of saucepans; for making sauces, yum!';
+	    $product->prices = array("USD"=>1000,"GBP"=>'1000',"JPY"=>"-");
+	    $product->conversionCurrency = "USD";
+	    $product->belongsToTaxonomies = array($subcat->guid);
+	    $product->save();
+	}
+	$tax = Entity::getByMeta('name','Tag', 1, 0, 'Taxonomy');
+	if ($tax == null)
+	{
+	    $tax = new Taxonomy();
+	    $tax->name = 'Tag';
+	    $tax->save();
+	}
+	
         //  get queried object
         $routeInfo = Hooks::applyFilter('resolve_routeinfo', Router::resolve(new Request($_SERVER['REQUEST_URI'])));
 	self::$activeRouteInfo = $routeInfo;

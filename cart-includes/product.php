@@ -6,9 +6,9 @@
 class Product extends Entity
 {
     /**
-     * @var float Price of product.
+     * @var array Array of prices, indexed by currency code.
     */
-    public $prices;
+    public $prices = array();
     /**
      * @var string ISO-4217 identifier for currency to automatically convert prices from.
     */
@@ -21,18 +21,6 @@ class Product extends Entity
      * @var string Description of the product.
     */
     public $description;
-    /**
-     * @var string Product serial number.
-    */
-    public $serialNumber;
-    /**
-     * @var int Number of items in stock.
-    */
-    public $inStock;
-    /**
-     * @var int Number of items in stock that are reserved or already sold.
-    */
-    public $reservedStock;
     /**
      * @var int Thumbnail attachment GUID.
     */
