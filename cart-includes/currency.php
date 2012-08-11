@@ -68,6 +68,7 @@ class Currency
 	if ($format == '')
 	    $format = $this->format;
 	
+	$amount = $this->toFloat($amount);
 	$majorAmount = floor($amount);
 	$minorAmount = sprintf("%0".$this->exponent."d", ($amount - $majorAmount) * (pow(10, $this->exponent)));
 	
@@ -80,6 +81,18 @@ class Currency
 	    '%c'	=> $this->alphaCode
 	);
 	return str_replace(array_keys($match), $match, $format);
+    }
+    
+    /**
+     * Converts an exponent value to it's float representation.
+     * eg. 1000 cents becomes 10.00 dollars
+     * @param int $exponentValue The exponent value.
+     * @return float
+    */
+    public function toFloat($exponentValue)
+    {
+	if ($this->exponent == 0) return $exponentValue;
+	return $exponentValue / pow(10, $this->exponent);
     }
     
     /**

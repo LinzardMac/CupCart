@@ -81,11 +81,11 @@ class Product extends Entity
      * @param bool $format Optional. Set to true to format as a currency string (ex. $1.00) or give a format string with the following format codes: %s - currency symbol, %m - major amount, %e - exponent (minor) amount, %n - currency name, %d - currency display name, %c - iso code
      * @return mixed A float or string depending on $format.
     */
-    public function getPrice($currency = '', $format = false)
+    public function getPrice($currency = '', $format = false, $asExponent = false)
     {
 	//  prices are stored as an array in the format
-	//  array("USD:1.00", "JPY:1000", ...)
-	//  the format "USD:-" denotes an automatic converstion
+	//  array("USD"=>1000, "JPY"=>10000, ...)
+	//  the format "USD"=>"-" denotes an automatic converstion
 	
 	if ($currency == '')
 	    $currency = Core::$activeStore->currencies[0];
@@ -97,7 +97,7 @@ class Product extends Entity
 	
 	if ($format !== false)
 	{
-	    $price = $this->getPrice($currency);
+	    $price = $this->getPrice($currency, false, true);
 	    if ($price === null)
 		return '';
 	    if ($format === true)
@@ -107,26 +107,26 @@ class Product extends Entity
 	
 	$prices = $this->prices;
 	if (!is_array($prices))
-	    $prices = array($this->prices);
-	foreach($prices as $price)
+	    return null;
+	if (!array_key_exists($currency->alphaCode, $prices))
+	    return null;
+	$amount = $prices[$currency->alphaCode];
+	if ($amount == "-")
 	{
-	    if ($price == null) continue;
-	    
-	    if (substr($price, 0, 3) == $currency->alphaCode)
-	    {
-		$amount = substr($price, 4);
-		if ($amount == "-")
-		{
-		    $baseCurrency = Currency::getByISO($this->conversionCurrency);
-		    if ($baseCurrency == null)
-			return null;
-		    $amount = $this->getPrice($baseCurrency);
-		    return Currency::convert($amount, $baseCurrency, $currency);
-		}
-		return floatval($amount);
-	    }
+	    $baseCurrency = Currency::getByISO($this->conversionCurrency);
+	    if ($baseCurrency == null)
+		return null;
+	    if($baseCurrency == $currency)
+		return null;
+	    $amount = $this->getPrice($baseCurrency);
+	    $convertedAmount = Currency::convert($amount, $baseCurrency, $currency);
+	    if ($asExponent) return $convertedAmount;
+	    else return $currency->toFloat($convertedAmount);
 	}
-	return null;
+	if ($asExponent)
+	    return $amount;
+	else
+	    return $currency->toFloat($amount);
     }
     
     /**
