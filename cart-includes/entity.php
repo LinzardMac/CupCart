@@ -183,67 +183,72 @@ abstract class Entity extends Model
 	}
 	$rows = $query->execute();
 
-	$ret = array();
+	$ret = '';
 	foreach($rows as $row)
 	{
 	    $val = $row['metaStrValue'];
 	    if ($val == null || $val == '')
 		$val = $row['metaIntValue'];
-	    if (array_key_exists($row['metaKeyName'], $ret))
+	    if ($row['metaArrayKey'] != null && $row['metaArrayKey'] != '')
 	    {
-		if (!is_array($ret[$row['metaKeyName']]))
-		    $ret[$row['metaKeyName']] = array($ret[$row['metaKeyName']]);
-		$ret[$row['metaKeyName']][] = $val;
+		if (!is_array($ret))
+		{
+		    $ret = array();
+		}
+		$ret[$row['metaArrayKey']] = $val;
 	    }
 	    else
-		$ret[$row['metaKeyName']] = $val;
+		$ret = $val;
 	}
 
-	if ($metaKey == '')
-	    return $ret;
-	return array_shift($ret);
+	return $ret;
     }
 	
     /**
      * Sets meta data for the entity.
      * @param string $metaKey Meta key.
-     * @param mixed $metaValue Meta value. Objects and non-numerically indexed arrays will be serialized and will not be searchable.
+     * @param mixed $metaValue Meta value. Objects will be serialized and will not be searchable.
     */
     public function setMeta($metaKey, $metaValue)
     {
 	$serialize = false;
 	if (is_object($metaValue))
 	    $serialize = true;
-	else if (is_array($metaValue))
-	{
-	    $keys = array_keys($metaValue);
-	    foreach($keys as $key)
-	    {
-		if (!is_numeric($key))
-		{
-		    $serialize = true;
-		    break;
-		}
-	    }
-	}
-	else
-	    $metaValue = array($metaValue);
-		
+	
 	$metaKeyId = self::getMetaKeyId($metaKey);
 		
 	DB::delete(Core::$activeStore->tables->entityMeta)->where('entityGuid','=',$this->guid)->and_where('entityRevision','=',$this->revisionId)
 	    ->and_where('metaKey','=',$metaKeyId)->execute();
-	foreach($metaValue as $v)
+	    
+	if (is_array($metaValue))
+	{
+	    foreach($metaValue as $index => $v)
+	    {
+		$field = 'metaStrValue';
+		if (self::isInteger($v))
+		    $field = 'metaIntValue';
+		$data = array(
+		    'entityGuid'    => $this->guid,
+		    'entityRevision'=> $this->revisionId,
+		    'autoload'      => 0,
+		    'metaKey'       => $metaKeyId,
+		    $field     	    => $v,
+		    'metaArrayKey'  => $index
+		);
+		DB::insert(Core::$activeStore->tables->entityMeta, array_keys($data))->values($data)->execute();
+	    }
+	}
+	else
 	{
 	    $field = 'metaStrValue';
-	    if (self::isInteger($v))
+	    if (self::isInteger($metaValue))
 		$field = 'metaIntValue';
 	    $data = array(
 		'entityGuid'    => $this->guid,
-    		'entityRevision'=> $this->revisionId,
+		'entityRevision'=> $this->revisionId,
 		'autoload'      => 0,
 		'metaKey'       => $metaKeyId,
-		$field     	=> $v
+		$field     	=> $metaValue
 	    );
 	    DB::insert(Core::$activeStore->tables->entityMeta, array_keys($data))->values($data)->execute();
 	}
@@ -266,6 +271,8 @@ abstract class Entity extends Model
 	//  save non-autoload meta data
 	foreach($allMeta as $key => $val)
 	{
+	    $this->setMeta($key, $val);
+	    /*
 	    $metaKeyId = self::getMetaKeyId($key);
 	    if (!is_array($val))
 		$val = array($val);
@@ -283,6 +290,7 @@ abstract class Entity extends Model
 		);
 		DB::insert(Core::$activeStore->tables->entityMeta, array_keys($data))->values($data)->execute();
 	    }
+	    */
 	}
 		
 	//  save entity attributes as autoload meta
@@ -602,16 +610,6 @@ abstract class Entity extends Model
 		}
 		else
 		    $obj->{$row['metaKeyName']} = $val;
-                /*
-		if ($obj->{$row['metaKeyName']} != null)
-                {
-		    if (!is_array($obj->{$row['metaKeyName']}))
-			$obj->{$row['metaKeyName']} = array($obj->{$row['metaKeyName']});
-                    $obj->{$row['metaKeyName']}[] = $val;
-                }
-                else
-                    $obj->{$row['metaKeyName']} = $val;
-		*/
             }
         }
         
