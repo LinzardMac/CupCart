@@ -186,14 +186,17 @@ abstract class Entity extends Model
 	$ret = array();
 	foreach($rows as $row)
 	{
+	    $val = $row['metaStrValue'];
+	    if ($val == null || $val == '')
+		$val = $row['metaIntValue'];
 	    if (array_key_exists($row['metaKeyName'], $ret))
 	    {
 		if (!is_array($ret[$row['metaKeyName']]))
 		    $ret[$row['metaKeyName']] = array($ret[$row['metaKeyName']]);
-		$ret[$row['metaKeyName']][] = $row['metaValue'];
+		$ret[$row['metaKeyName']][] = $val;
 	    }
 	    else
-		$ret[$row['metaKeyName']] = $row['metaValue'];
+		$ret[$row['metaKeyName']] = $val;
 	}
 
 	if ($metaKey == '')
@@ -232,12 +235,15 @@ abstract class Entity extends Model
 	    ->and_where('metaKey','=',$metaKeyId)->execute();
 	foreach($metaValue as $v)
 	{
+	    $field = 'metaStrValue';
+	    if (self::isInteger($v))
+		$field = 'metaIntValue';
 	    $data = array(
 		'entityGuid'    => $this->guid,
     		'entityRevision'=> $this->revisionId,
 		'autoload'      => 0,
 		'metaKey'       => $metaKeyId,
-		'metaValue'     => $v
+		$field     	=> $v
 	    );
 	    DB::insert(Core::$activeStore->tables->entityMeta, array_keys($data))->values($data)->execute();
 	}
@@ -265,12 +271,15 @@ abstract class Entity extends Model
 		$val = array($val);
 	    foreach($val as $v)
 	    {
+		$field = 'metaStrValue';
+		if (self::isInteger($v))
+		    $field = 'metaIntValue';
 		$data = array(
 		    'entityGuid'    => $this->guid,
 		    'entityRevision'=> $this->revisionId,
 		    'autoload'      => 0,
 		    'metaKey'       => $metaKeyId,
-		    'metaValue'     => $v
+		    $field     	    => $v
 		);
 		DB::insert(Core::$activeStore->tables->entityMeta, array_keys($data))->values($data)->execute();
 	    }
