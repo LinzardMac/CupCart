@@ -183,25 +183,54 @@ abstract class Entity extends Model
 	}
 	$rows = $query->execute();
 
-	$ret = '';
-	foreach($rows as $row)
+	if ($metaKey != '')
 	{
-	    $val = $row['metaStrValue'];
-	    if ($val == null || $val == '')
-		$val = $row['metaIntValue'];
-	    if ($row['metaArrayKey'] != null && $row['metaArrayKey'] != '')
+	    $ret = '';
+	    foreach($rows as $row)
 	    {
-		if (!is_array($ret))
+		$val = $row['metaStrValue'];
+		if ($val == null || $val == '')
+		    $val = $row['metaIntValue'];
+		if ($row['metaArrayKey'] != null && $row['metaArrayKey'] != '')
 		{
-		    $ret = array();
+		    if (!is_array($ret))
+		    {
+			$ret = array();
+		    }
+		    $ret[$row['metaArrayKey']] = $val;
 		}
-		$ret[$row['metaArrayKey']] = $val;
+		else
+		    $ret = $val;
 	    }
-	    else
-		$ret = $val;
+    
+	    return $ret;
 	}
-
-	return $ret;
+	else
+	{
+	    $ret = array();
+	    foreach($rows as $row)
+	    {
+		$val = $row['metaStrValue'];
+		if ($val == null || $val == '')
+		    $val = $row['metaIntValue'];
+		$key = $row['metaKeyName'];
+		if (!array_key_exists($key, $ret))
+		    $ret[$key] = '';
+		
+		if ($row['metaArrayKey'] != null && $row['metaArrayKey'] != '')
+		{
+		    if (!is_array($ret[$key]))
+		    {
+			$ret[$key] = array();
+		    }
+		    $ret[$key][$row['metaArrayKey']] = $val;
+		}
+		else
+		    $ret[$key] = $val;
+	    }
+    
+	    return $ret;
+	}
     }
 	
     /**
