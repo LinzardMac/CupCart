@@ -159,6 +159,8 @@ class Core
 	    $product->conversionCurrency = "USD";
 	    $product->belongsToTaxonomies = array($subcat->guid);
 	    $product->save();
+	    
+	    Taxonomy::loadAll();
 	}
 	$tax = Entity::getByMeta('name','Tag', 1, 0, 'Taxonomy');
 	if ($tax == null)
@@ -166,6 +168,8 @@ class Core
 	    $tax = new Taxonomy();
 	    $tax->name = 'Tag';
 	    $tax->save();
+	    
+	    Taxonomy::loadAll();
 	}
 	
         //  get queried object
