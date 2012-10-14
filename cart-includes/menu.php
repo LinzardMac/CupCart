@@ -19,7 +19,7 @@ class Menu
 	$this->submenus = array();
     }
     
-    public function addSubMenuPage($pageTitle, $menuTitle, $capability, $function, $position)
+    public function addSubMenuPage($pageTitle, $menuTitle, $capability, $function, $position = null)
     {
 	return self::addSubMenuPageTo($this, $pageTitle, $menuTitle, $capability, $function, $position);
     }
@@ -64,14 +64,14 @@ class Menu
     */
     private static $allMenus = array();
     
-    public static function addMenuPage($pageTitle, $menuTitle, $capability, $function, $position)
+    public static function addMenuPage($pageTitle, $menuTitle, $capability, $function, $position = null)
     {
-		$slugBase = Router::title($menuTitle);
-		$slug = $slugBase;
-		$i = 0;
-		while(self::getPanel($slug) != null)
-			$slug = $slugBase . '-' . (++$i);
-		
+	$slugBase = Router::title($menuTitle);
+	$slug = $slugBase;
+	$i = 0;
+	while(self::getPanel($slug) != null)
+	    $slug = $slugBase . '-' . (++$i);
+	
 	$obj = new Menu();
 	$obj->pageTitle = $pageTitle;
 	$obj->menuTitle = $menuTitle;
@@ -79,12 +79,16 @@ class Menu
 	$obj->function = $function;
 	$obj->position = $position;
 	$obj->slug = $slug;
+	
+	if ($position == null)
+	    $position = sizeof(self::$menus);
+	
 	self::$menus[$position] = $obj;
 	self::$allMenus[] = $obj;
 	return $obj;
     }
     
-    public static function addSubMenuPageTo($parent, $pageTitle, $menuTitle, $capability, $function, $position)
+    public static function addSubMenuPageTo($parent, $pageTitle, $menuTitle, $capability, $function, $position = null)
     {
 	if (!($parent instanceof Menu))
 	{
@@ -116,6 +120,9 @@ class Menu
 	$obj->function = $function;
 	$obj->position = $position;
 	$obj->slug = $slug;
+	
+	if ($position == null)
+	    $position = sizeof($parent->submenus);
 	
 	$parent->submenus[$position] = $obj;
 	self::$allMenus[] = $obj;

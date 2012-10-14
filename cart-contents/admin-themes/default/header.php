@@ -93,6 +93,6 @@
 		
 		    <h4><?=$activePage->pageTitle?></h4>
 		    <ul class="breadcrumb">
-			<li><a href="<?=Router::url('admin', array('category1'=>$activePanel->slug))?>"><?=$activePanel->menuTitle?></a> <span class="divider">/</span></li>
+			<li><a href="<? TPL::adminUrl($activePanel) ?>"><?=$activePanel->menuTitle?></a> <span class="divider">/</span></li>
 			<li class="active"><?=$activePage->menuTitle?></li>
 		    </ul>

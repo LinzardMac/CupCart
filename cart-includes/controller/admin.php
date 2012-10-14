@@ -9,7 +9,8 @@ class Controller_Admin extends Controller
 	public function get_index()
 	{
 		//  setup admin menus
-		$this->createDefaultMenu();
+		//$this->createDefaultMenu();
+		$this->loadAdminHandlers();
 		Hooks::doAction("admin_menus");
 		
 		//  determine which page is being viewed
@@ -70,9 +71,21 @@ class Controller_Admin extends Controller
 		View::get('index')->set('output',$html)->render();
 	}
 	
+	public function loadAdminHandlers()
+	{
+	    new Admin_Dashboard();
+	    new Admin_Products();
+	    new Admin_Inventory();
+	    new Admin_Orders();
+	    new Admin_Logistics();
+	    new Admin_SiteSettings();
+	    new Admin_Reports();
+	    new Admin_CustomerService();
+	}
+	
 	public function dashboard($controller, $routeInfo)
 	{
-		View::get('dashboard')->render();
+	    View::get('dashboard')->render();
 	}
 	
 	public function products($controller, $routeInfo)
