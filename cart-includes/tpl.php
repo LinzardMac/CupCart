@@ -251,7 +251,7 @@ class TPL
 	 *
 	 * @param mixed $panel Optional. Name, index or Menu instance of admin panel to link to.
 	 * @param mixed $page Optional. Name, index or Menu instance of the admin page to link to.
-	 * @param array $params Optional. Array of parameters to include in the URI. Up to 8 parameters are supported by the basic router.
+	 * @param array $params Optional. Array of parameters to include in the URI. Up to 10 parameters are supported by the basic router.
 	 * @param string $title Optional. A title to be included at the end of the URI. Will be made URL safe.
 	 * @param int $entity Optional. An entity GUID or other unique ID to be included with the title in the URI.
 	 * @param string $format Optional. The file extension to include at the end of the URL. Defaults to "html".
@@ -262,7 +262,7 @@ class TPL
 	{
 		$routerParams = array();
 		foreach($params as $i => $param)
-			$routerParams['category'.($i + 2)] = $param;
+			$routerParams['param'.($i + 1)] = $param;
 		if ($title != null)
 			$routerParams['title'] = Router::title($title);
 		if ($entity != null)
@@ -278,7 +278,7 @@ class TPL
 		}
 		
 		if ($panel == null)
-			return Router::url('admin', $routerParams);
+			return Hooks::applyFilter("admin_url", Router::url('admin', $routerParams));
 		
 		if (!($page instanceof Menu))
 		{
@@ -286,8 +286,8 @@ class TPL
 		}
 		
 		if ($page == null)
-			return Router::url('admin', array_merge(array('category1'=>$panel->slug), $routerParams));
+			return Hooks::applyFilter("admin_url", Router::url('admin', array_merge(array('panel'=>$panel->slug), $routerParams)));
 		
-		return Router::url('admin', array_merge(array('category1'=>$panel->slug, 'category2'=>$page->slug), $routerParams));
+		return Hooks::applyFilter("admin_url", Router::url('admin', array_merge(array('panel'=>$panel->slug, 'page'=>$page->slug), $routerParams)));
 	}
 }

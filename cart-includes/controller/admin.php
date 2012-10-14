@@ -15,9 +15,9 @@ class Controller_Admin extends Controller
 		//  determine which page is being viewed
 		$activePanel = Menu::$menus[0];
 		$params = Core::$activeRouteInfo->params;
-		if (array_key_exists('category1', $params))
+		if (array_key_exists('panel', $params))
 		{
-		    $searchPanelSlug = $params['category1'];
+		    $searchPanelSlug = $params['panel'];
 		    foreach(Menu::$menus as $menu)
 		    {
 			if ($menu->slug == $searchPanelSlug)
@@ -41,9 +41,9 @@ class Controller_Admin extends Controller
 		if ($activePage == null)
 		    $activePage = $activePanel;
 		
-		if (array_key_exists('category2', $params))
+		if (array_key_exists('page', $params))
 		{
-		    $searchSlug = $params['category2'];
+		    $searchSlug = $params['page'];
 		    foreach($activePanel->submenus as $menu)
 		    {
 			if ($menu->slug == $searchSlug)
@@ -54,16 +54,6 @@ class Controller_Admin extends Controller
 		    }
 		}
 		
-		//  make a more appropriate parameter array
-		$paramArray = array();
-		foreach($params as $index => $param)
-		{
-			if ($index == 'category1' ||
-				$index == 'category2')
-				continue;
-			$paramArray[] = $param;
-		}
-		
 		//  check permissions
 		
 		//  run
@@ -72,7 +62,7 @@ class Controller_Admin extends Controller
 		
 		$callback = $activePage->function;
 		ob_start();
-		call_user_func_array($callback, array($this, $paramArray));
+		call_user_func_array($callback, array($this, Core::$activeRouteInfo));
 		$html = ob_get_contents();
 		ob_end_clean();
 		
@@ -80,42 +70,42 @@ class Controller_Admin extends Controller
 		View::get('index')->set('output',$html)->render();
 	}
 	
-	public function dashboard($controller, $params)
+	public function dashboard($controller, $routeInfo)
 	{
 		View::get('dashboard')->render();
 	}
 	
-	public function products($controller, $params)
+	public function products($controller, $routeInfo)
 	{
 	    echo 'Products';
 	}
 	
-	public function inventory($controller, $params)
+	public function inventory($controller, $routeInfo)
 	{
 	    echo 'Inventory';
 	}
 	
-	public function orders($controller, $params)
+	public function orders($controller, $routeInfo)
 	{
 	    echo 'Orders';
 	}
 	
-	public function logistics($controller, $params)
+	public function logistics($controller, $routeInfo)
 	{
 	    echo 'Logistics';
 	}
 	
-	public function settings($controller, $params)
+	public function settings($controller, $routeInfo)
 	{
 	    echo 'Settings';
 	}
 	
-	public function reports($controller, $params)
+	public function reports($controller, $routeInfo)
 	{
 	    echo 'Reports';
 	}
 	
-	public function customerService($controller, $params)
+	public function customerService($controller, $routeInfo)
 	{
 	    echo 'Customer Service';
 	}
