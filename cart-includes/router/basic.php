@@ -28,7 +28,7 @@ class Router_Basic extends Router
     {
 	$this->_routes = array();
 	//  admin pages
-	$this->addRoute(Route::factory('admin', CC_ADMIN_DIRECTORY.'(/<action>(/<category1>)(/<category2>)(/<category3>)(/<category4>)(/<category5>)(/<category6>)(/<category7>)(/<category8>)(/<category9>)(/<category10>)(/(<title>-)<entity>))(.<format>)')
+	$this->addRoute(Route::factory('admin', CC_ADMIN_DIRECTORY.'(/<category1>)(/<category2>)(/<category3>)(/<category4>)(/<category5>)(/<category6>)(/<category7>)(/<category8>)(/<category9>)(/<category10>)(/(<title>-)<entity>)(.<format>)')
 	    ->defaults(array('controller'=>'admin', 'action'=>'index', 'format'=>'html')));
 	//  match admin controller to a non-existent controller to avoid /admin/ controller access
 	$this->addRoute(Route::factory('adminblock', 'admin(/<action>(/<category1>)(/<category2>)(/<category3>)(/<category4>)(/<category5>)(/<category6>)(/<category7>)(/<category8>)(/<category9>)(/<category10>)(/(<title>-)<entity>))(.<format>)')

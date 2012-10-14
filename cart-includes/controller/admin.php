@@ -13,28 +13,54 @@ class Controller_Admin extends Controller
 		Hooks::doAction("admin_menus");
 		
 		//  determine which page is being viewed
-		$activeMenu = 0;
-		$activeSubMenu = $activeTab = -1;
-		if (sizeof($this->request->path) > 1)
-			$activeMenu = $this->request->path[1];
-		if (sizeof($this->request->path) > 2)
-			$activeSubMenu = $this->request->path[2];
-		if (sizeof($this->request->path) > 3)
-			$activeTab = $this->request->path[3];
-		$theMenu = Menu::$menus[$activeMenu];
-		if ($activeSubMenu > -1)
+		$activePanel = Menu::$menus[0];
+		$params = Core::$activeRouteInfo->params;
+		if (array_key_exists('category1', $params))
 		{
-			$theMenu = $theMenu->submenus[$activeSubMenu];
-			if ($activeTab > -1)
+		    $searchPanelSlug = $params['category1'];
+		    foreach(Menu::$menus as $menu)
+		    {
+			if ($menu->slug == $searchPanelSlug)
 			{
-				$theMenu = $theMenu->submenus[$activeTab];
+			    $activePanel = $menu;
+			    break;
 			}
+		    }
+		}
+		
+		$activePage = null;
+		for($i = 0; $i < sizeof($activePanel->submenus); $i++)
+		{
+		    if ($activePanel->submenus[$i]->function != null)
+		    {
+			$activePage = $activePanel->submenus[$i];
+			break;
+		    }
+		}
+		
+		if ($activePage == null)
+		    $activePage = $activePanel;
+		
+		if (array_key_exists('category2', $params))
+		{
+		    $searchSlug = $params['category2'];
+		    foreach($activePanel->submenus as $menu)
+		    {
+			if ($menu->slug == $searchSlug)
+			{
+			    $activePage = $menu;
+			    break;
+			}
+		    }
 		}
 		
 		//  check permissions
 		
 		//  run
-		$callback = $theMenu->function;
+		View::setGlobal('activePanel', $activePanel);
+		View::setGlobal('activePage', $activePage);
+		
+		$callback = $activePage->function;
 		ob_start();
 		call_user_func_array($callback, array($this));
 		$html = ob_get_contents();
@@ -49,22 +75,75 @@ class Controller_Admin extends Controller
 		View::get('dashboard')->render();
 	}
 	
+	public function products($controller)
+	{
+	    echo 'Products';
+	}
+	
+	public function inventory($controller)
+	{
+	    echo 'Inventory';
+	}
+	
+	public function orders($controller)
+	{
+	    echo 'Orders';
+	}
+	
+	public function logistics($controller)
+	{
+	    echo 'Logistics';
+	}
+	
+	public function settings($controller)
+	{
+	    echo 'Settings';
+	}
+	
+	public function reports($controller)
+	{
+	    echo 'Reports';
+	}
+	
+	public function customerService($controller)
+	{
+	    echo 'Customer Service';
+	}
+	
 	private function createDefaultMenu()
 	{
 		$dashboard = Menu::addMenuPage('Dashboard',      'Dashboard',      'admin', array($this,'dashboard'), 0);
-		$catalog   = Menu::addMenuPage('Catalog Mgt.',   'Catalog Mgt.',   'admin', array($this,''), 1);
-		$orders    = Menu::addMenuPage('Order Mgt.',     'Order Mgt.',     'admin', array($this,''), 2);
-		$employees = Menu::addMenuPage('Employees',      'Employees',      'admin', array($this,''), 3);
-		$shipping  = Menu::addMenuPage('Shipping',       'Shipping',       'admin', array($this,''), 4);
-		$payment   = Menu::addMenuPage('Payment',        'Payment',        'admin', array($this,''), 5);
-		$settings  = Menu::addMenuPage('Store Settings', 'Store Settings', 'admin', array($this,''), 6);
+		$products  = Menu::addMenuPage('Products',   	 'Products',   	   'admin', array($this,'products'), 1);
+		$inventory = Menu::addMenuPage('Inventory',      'Inventory',      'admin', array($this,'inventory'), 2);
+		$orders    = Menu::addMenuPage('Orders',         'Orders',         'admin', array($this,'orders'), 3);
+		$logistics = Menu::addMenuPage('Logistics',      'Logistics',      'admin', array($this,'logistics'), 4);
+		$settings  = Menu::addMenuPage('Site Settings',  'Site Settings',  'admin', array($this,'settings'), 5);
+		$reports   = Menu::addMenuPage('Reports', 	 'Reports', 	   'admin', array($this,'reports'), 6);
+		$customer  = Menu::addMenuPage('Customer Service','Customer Service', 	   'admin', array($this,'customerService'), 7);
 		
-		$catalog->addSubMenuPage('Categories', 'Categories', 'admin', array($this, ''), 0);
+		$dashboard->addSubMenuPage('Home', 'Home', 'admin', array($this, 'dashboard'), 0);
+		$dashboard->addSubMenuPage('Overview', 'Overview', 'admin', array($this, 'dashboard'), 1);
+		$dashboard->addSubMenuPage('Quick Stats', 'Quick Stats', 'admin', array($this, 'dashboard'), 2);
+		$dashboard->addSubMenuPage('Personalize', 'Personalize', 'admin', array($this, 'dashboard'), 3);
+		
+		$products->addSubMenuPage('Products', 'Products', null, null, 0);
+		$products->addSubMenuPage('New Product', 'New Product', 'admin', array($this, 'products'), 1);
+		$products->addSubMenuPage('Manage Products', 'Manage Products', 'admin', array($this, 'products'), 2);
+		
+		$products->addSubMenuPage('Taxonomies', 'Taxonomies', null, null, 3);
+		$products->addSubMenuPage('New Category', 'New Category', 'admin', array($this, 'products'), 4);
+		$products->addSubMenuPage('Manage Categories', 'Manage Categories', 'admin', array($this, 'products'), 5);
+		$products->addSubMenuPage('New Tag', 'New Tag', 'admin', array($this, 'products'), 6);
+		$products->addSubMenuPage('Manage Tags', 'Manage Tags', 'admin', array($this, 'products'), 7);
+		$products->addSubMenuPage('New Taxonomy', 'New Taxonomy', 'admin', array($this, 'products'), 8);
+		$products->addSubMenuPage('Manage Taxonomies', 'Manage Taxonomies', 'admin', array($this, 'products'), 9);
+		
+		/*$catalog->addSubMenuPage('Categories', 'Categories', 'admin', array($this, ''), 0);
 		$catalogProducts = $catalog->addSubMenuPage('Products',   'Products',   'admin', array($this, ''), 1);
 		$catalogProducts->addSubMenuPage('Dashboard', 'Dashboard', 'admin', array($this, ''), 0);
 		$catalogProducts->addSubMenuPage('Add New', 'Add New', 'admin', array($this, ''), 1);
 		$catalogProducts->addSubMenuPage('Images', 'Images', 'admin', array($this, ''), 2);
 		$catalogProducts->addSubMenuPage('Attributes', 'Attributes', 'admin', array($this, ''), 3);
-		$catalogProducts->addSubMenuPage('Discounts', 'Discounts', 'admin', array($this, ''), 4);
+		$catalogProducts->addSubMenuPage('Discounts', 'Discounts', 'admin', array($this, ''), 4);*/
 	}
 }
