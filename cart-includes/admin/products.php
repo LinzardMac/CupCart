@@ -21,6 +21,6 @@ class Admin_Products
     
     public function products($controller, $routeInfo)
     {
-	var_dump($routeInfo);
+	
     }
 }
