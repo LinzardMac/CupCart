@@ -60,6 +60,37 @@ abstract class Router
 	}
 	return null;
     }
+	
+	/**
+	 * Convert a phrase to a URL-safe title.
+	 *
+	 *     echo URL::title('My Blog Post'); // "my-blog-post"
+	 *
+	 * @param   string   $title       Phrase to convert
+	 * @param   string   $separator   Word separator (any single character)
+	 * @param   boolean  $ascii_only  Transliterate to ASCII?
+	 * @return  string
+	 * @uses    UTF8::transliterate_to_ascii
+	 */
+	public static function title($title, $separator = '-', $ascii_only = FALSE)
+	{
+		if ($ascii_only === TRUE)
+		{
+			// Remove all characters that are not the separator, a-z, 0-9, or whitespace
+			$title = preg_replace('![^'.preg_quote($separator).'a-z0-9\s]+!', '', strtolower($title));
+		}
+		else
+		{
+			// Remove all characters that are not the separator, letters, numbers, or whitespace
+			$title = preg_replace('![^'.preg_quote($separator).'\pL\pN\s]+!u', '', strtolower($title));
+		}
+
+		// Replace all separator characters and whitespace by a single separator
+		$title = preg_replace('!['.preg_quote($separator).'\s]+!u', $separator, $title);
+
+		// Trim separators from the beginning and end
+		return trim($title, $separator);
+	}
     
     /**
      * Adds a new router to the router stack.

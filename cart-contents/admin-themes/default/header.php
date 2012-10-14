@@ -28,7 +28,7 @@
 		    <a class="brand" href="#"><?=TPL::getStoreName()?></a>
 		    <ul class="nav">
 			<? foreach(Menu::$menus as $menu): ?>
-			    <li><a href="<?=Router::url('admin', array('category1' => $menu->slug))?>"><?=$menu->menuTitle?></a></li>
+			    <li><a href="<? TPL::adminUrl($menu) ?>"><?=$menu->menuTitle?></a></li>
 			<? endforeach; ?>
 		      <!--
 		      <li class="active"><a href="#">Dashboard</a></li>
@@ -79,7 +79,7 @@
 			    <? if ($menu->function == null): ?>
 				<li><h5><?=$menu->menuTitle?></h5></li>
 			    <? else: ?>
-				<li><a href="#"><?=$menu->menuTitle?></a></li>
+				<li><a href="<? TPL::adminUrl($activePanel, $menu) ?>"><?=$menu->menuTitle?></a></li>
 			    <? endif; ?>
 			<? endforeach; ?>
 		    </ul>

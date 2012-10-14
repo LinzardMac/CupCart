@@ -230,4 +230,64 @@ class TPL
             return '';
         return self::$activeProductLoop->theTitle();
     }
+	
+	/**
+	 * Prints the URL to an admin page.
+	 *
+	 * @param mixed $panel Optional. Name, index or Menu instance of admin panel to link to.
+	 * @param mixed $page Optional. Name, index or Menu instance of the admin page to link to.
+	 * @param array $params Optional. Array of parameters to include in the URI. Up to 8 parameters are supported by the basic router.
+	 * @param string $title Optional. A title to be included at the end of the URI. Will be made URL safe.
+	 * @param int $entity Optional. An entity GUID or other unique ID to be included with the title in the URI.
+	 * @param string $format Optional. The file extension to include at the end of the URL. Defaults to ".html".
+	*/
+	public static function adminUrl($panel = null, $page = null, $params = array(), $title = null, $entity = null, $format = null)
+	{
+		echo self::getAdminUrl($panel, $page, $params, $title, $entity, $format);
+	}
+	
+	/**
+	 * Gets the URL to an admin page.
+	 *
+	 * @param mixed $panel Optional. Name, index or Menu instance of admin panel to link to.
+	 * @param mixed $page Optional. Name, index or Menu instance of the admin page to link to.
+	 * @param array $params Optional. Array of parameters to include in the URI. Up to 8 parameters are supported by the basic router.
+	 * @param string $title Optional. A title to be included at the end of the URI. Will be made URL safe.
+	 * @param int $entity Optional. An entity GUID or other unique ID to be included with the title in the URI.
+	 * @param string $format Optional. The file extension to include at the end of the URL. Defaults to "html".
+	 *
+	 * @return string URL to the specified admin page.
+	*/
+	public static function getAdminUrl($panel = null, $page = null, $params = array(), $title = null, $entity = null, $format = null)
+	{
+		$routerParams = array();
+		foreach($params as $i => $param)
+			$routerParams['category'.($i + 2)] = $param;
+		if ($title != null)
+			$routerParams['title'] = Router::title($title);
+		if ($entity != null)
+			$routerParams['entity'] = $entity;
+		if ($format != null)
+			$routerParams['format'] = $format;
+		if ($title != null && $entity == null)
+			$routerParams['entity'] = 0;
+		
+		if (!($panel instanceof Menu))
+		{
+			$panel = Menu::getPanel($panel);
+		}
+		
+		if ($panel == null)
+			return Router::url('admin', $routerParams);
+		
+		if (!($page instanceof Menu))
+		{
+			$page = $panel->getPage($page);
+		}
+		
+		if ($page == null)
+			return Router::url('admin', array_merge(array('category1'=>$panel->slug), $routerParams));
+		
+		return Router::url('admin', array_merge(array('category1'=>$panel->slug, 'category2'=>$page->slug), $routerParams));
+	}
 }

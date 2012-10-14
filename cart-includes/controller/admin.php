@@ -54,6 +54,16 @@ class Controller_Admin extends Controller
 		    }
 		}
 		
+		//  make a more appropriate parameter array
+		$paramArray = array();
+		foreach($params as $index => $param)
+		{
+			if ($index == 'category1' ||
+				$index == 'category2')
+				continue;
+			$paramArray[] = $param;
+		}
+		
 		//  check permissions
 		
 		//  run
@@ -62,7 +72,7 @@ class Controller_Admin extends Controller
 		
 		$callback = $activePage->function;
 		ob_start();
-		call_user_func_array($callback, array($this));
+		call_user_func_array($callback, array($this, $paramArray));
 		$html = ob_get_contents();
 		ob_end_clean();
 		
@@ -70,42 +80,42 @@ class Controller_Admin extends Controller
 		View::get('index')->set('output',$html)->render();
 	}
 	
-	public function dashboard($controller)
+	public function dashboard($controller, $params)
 	{
 		View::get('dashboard')->render();
 	}
 	
-	public function products($controller)
+	public function products($controller, $params)
 	{
 	    echo 'Products';
 	}
 	
-	public function inventory($controller)
+	public function inventory($controller, $params)
 	{
 	    echo 'Inventory';
 	}
 	
-	public function orders($controller)
+	public function orders($controller, $params)
 	{
 	    echo 'Orders';
 	}
 	
-	public function logistics($controller)
+	public function logistics($controller, $params)
 	{
 	    echo 'Logistics';
 	}
 	
-	public function settings($controller)
+	public function settings($controller, $params)
 	{
 	    echo 'Settings';
 	}
 	
-	public function reports($controller)
+	public function reports($controller, $params)
 	{
 	    echo 'Reports';
 	}
 	
-	public function customerService($controller)
+	public function customerService($controller, $params)
 	{
 	    echo 'Customer Service';
 	}
