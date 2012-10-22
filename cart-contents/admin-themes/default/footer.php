@@ -1,4 +1,9 @@
 		</div>
+		
+		<div class="span2">
+		    Customizable toolbar
+		</div>
+		
 	    </div>
 	</div>
 	

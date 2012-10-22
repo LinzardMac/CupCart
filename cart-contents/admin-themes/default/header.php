@@ -26,20 +26,13 @@
 			<span class="icon-bar"></span>
 		    </button>
 		    <a class="brand" href="#"><?=TPL::getStoreName()?></a>
+		    <!--
 		    <ul class="nav">
 			<? foreach(Menu::$menus as $menu): ?>
 			    <li><a href="<? TPL::adminUrl($menu) ?>"><?=$menu->menuTitle?></a></li>
 			<? endforeach; ?>
-		      <!--
-		      <li class="active"><a href="#">Dashboard</a></li>
-		      <li><a href="#">Products</a></li>
-		      <li><a href="#">Inventory</a></li>
-		      <li><a href="#">Orders</a></li>
-		      <li><a href="#">Logistics</a></li>
-		      <li><a href="#">Site Settings</a></li>
-		      <li><a href="#">Reports</a></li>
-		      -->
 		    </ul>
+		    -->
 		    
 		    <ul class="nav pull-right">
 			<li class="dropdown">
@@ -74,17 +67,20 @@
 	<div class="container-fluid">
 	    <div class="row-fluid">
 		<div class="span2">
-		    <ul class="nav nav-tabs nav-stacked affix span2">
-			<? foreach($activePanel->submenus as $menu): ?>
-			    <? if ($menu->function == null): ?>
-				<li><h5><?=$menu->menuTitle?></h5></li>
-			    <? else: ?>
-				<li><a href="<? TPL::adminUrl($activePanel, $menu) ?>"><?=$menu->menuTitle?></a></li>
-			    <? endif; ?>
+		    <ul class="nav nav-tabs nav-stacked">
+			<? foreach(Menu::$menus as $panel): ?>
+			    <li><h4><?=$panel->menuTitle?></h4></li>
+			    <? foreach($panel->submenus as $menu): ?>
+				<? if ($menu->function == null): ?>
+				    <li><h5><?=$menu->menuTitle?></h5></li>
+				<? else: ?>
+				    <li><a href="<? TPL::adminUrl($panel, $menu) ?>"><?=$menu->menuTitle?></a></li>
+				<? endif; ?>
+			    <? endforeach; ?>
 			<? endforeach; ?>
 		    </ul>
 		</div>
-		<div class="span10">
+		<div class="span8">
 		
 		    <div class="alert">
 			<button type="button" class="close" data-dismiss="alert">×</button>
