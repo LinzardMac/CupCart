@@ -28,7 +28,7 @@ define("CC_THEMES_URI", CC_ROOT_URI."cart-contents/themes/");
 define("CC_ADMIN_THEMES_URI", CC_ROOT_URI."cart-contents/admin-themes/");
 
 //  bootstrap environment
-spl_autoload_register('cart_autoload', true, true);
+spl_autoload_register('cart_autoload');
 
 function cart_autoload($className)
 {
