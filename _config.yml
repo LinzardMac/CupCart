@@ -1,0 +1,8 @@
+title: Cupcart
+description: "It's like a nice shiney, fresh baked cupcake full of awesome e-commerceness. We are going to work on something badass and full of awesomeness. "
+google_analytics: 
+show_downloads: true
+theme: jekyll-theme-slate
+
+gems:
+  - jekyll-mentions
